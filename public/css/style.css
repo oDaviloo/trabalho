@@ -1,15 +1,13 @@
 
-
-/*formatação body*/
 body{
     width: 100%;
     height: 100%;
     margin: 0px auto;
     /*background-color: #87CEFA;*/
-    background-color: white;
+    background-color: rgb(255, 255, 255);
 }
 
-/*formatacao página index*/
+
 
 .titulo1{
     font-size: 30px;

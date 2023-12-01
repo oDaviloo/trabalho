@@ -11,8 +11,8 @@ const bodyParser = require("body-parser");
 const mysql = require("mysql"); 
 const { resolveSoa } = require('dns');
 
-app.use(session({secret: "ssshhhhh", resave: false, // Adicione esta linha para resolver o aviso de depreciação
-saveUninitialized: false // Adicione esta linha para resolver o aviso de depreciação
+app.use(session({secret: "ssshhhhh", resave: false, 
+saveUninitialized: false 
 }));
 
 app.use(express.static('public'))
@@ -30,7 +30,7 @@ function conectiondb(){
         host: 'localhost', 
         user: 'root', 
         password: '', 
-        database: 'dblogin' 
+        database: 'caçaofertas' 
     });
 
    
@@ -91,6 +91,8 @@ app.post('/register', function (req, res){
     var pass = req.body.pwd;
     var email = req.body.email;
     var idade = req.body.idade;
+    var cidade = req.body.cidade;
+    var estado = req.body.estado;
 
     var con = conectiondb();
 
@@ -101,9 +103,9 @@ app.post('/register', function (req, res){
             var message = 'E-mail já cadastrado';
             res.render('views/registro', { message: message });
         }else{
-            var query = 'INSERT INTO users VALUES (DEFAULT, ?, ?, ?, ?)';
+            var query = 'INSERT INTO users VALUES (DEFAULT, ?, ?, ?, ?, ?, ?)';
 
-            con.query(query, [username, email, idade, pass], function (err, results){
+            con.query(query, [username, email, idade, cidade, estado, pass], function (err, results){
                 if (err){
                     throw err;
                 }else{
