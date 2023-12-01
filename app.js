@@ -1,6 +1,3 @@
-
-
-
 const express = require('express');
 const session = require("express-session");
 const path = require('path');
@@ -78,14 +75,23 @@ app.get("/views/home", function (req, res){
     
 });
 
+
 //rota para login
 app.get("/views/login", function(req, res){
     var message = ' ';
     res.render('views/login', {message:message});
 });
 
+app.get('/cadastro_empresas', function(req, res) {
+    // Lógica para renderizar a página de cadastro de empresas
+    res.render('views/cadastro_empresas');
+});
+
 //método post do register
 app.post('/register', function (req, res){
+
+    
+    
 
     var username = req.body.nome;
     var pass = req.body.pwd;
@@ -119,7 +125,8 @@ app.post('/register', function (req, res){
 });
 
 
-app.post('/log', function (req, res){
+
+app.post('/home', function (req, res){
  
     var email = req.body.email;
     var pass = req.body.pass;
@@ -141,6 +148,49 @@ app.post('/log', function (req, res){
     });
 });
 
+app.post('/home', function (req, res) {
+    var email = req.body.email;
+    var pass = req.body.pass;
+   
+    var con = conectiondb();
+   
+    var query = 'SELECT * FROM users WHERE pass = ? AND email LIKE ?';
+    
+    con.query(query, [pass, email], function (err, results) {
+        if (results.length > 0) {
+            req.session.user = email;         
+            console.log("Login feito com sucesso!");
+            res.redirect('/home'); // Redireciona para a página home após o login bem-sucedido
+        } else {
+            var message = 'Login incorreto!';
+            res.render('views/login', { message: message });
+        }
+    });
+});
+
+app.get('/home', function (req, res) {
+    if (req.session.user) {
+        // Lógica para verificar se o usuário está logado
+        // Se estiver logado, renderize a página home
+        res.render('views/home');
+    } else {
+        // Se não estiver logado, redirecione para a página de login ou faça outro tratamento
+        res.redirect('/');
+    }
+});
+
+// Adicione também uma rota para lidar com o método POST na mesma rota '/home'
+app.post('/home', function (req, res) {
+    if (req.session.user) {
+        // Lógica para verificar se o usuário está logado
+        // Se estiver logado e o método POST for enviado para /home, faça algo aqui
+    } else {
+        // Se não estiver logado e o método POST for enviado para /home, redirecione para a página de login ou faça outro tratamento
+        res.redirect('/');
+    }
+});
+
+
 app.post('/update', function (req, res){
    
     console.log("entrou");
@@ -149,6 +199,8 @@ app.post('/update', function (req, res){
     var pass = req.body.pwd;
     var username = req.body.nome;
     var idade = req.body.idade;
+    var cidade = req.body.cidade;
+    var estado = req.body.estado;
    
     var con = conectiondb();
    
