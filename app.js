@@ -8,6 +8,7 @@ const bodyParser = require("body-parser");
 
 const mysql = require("mysql"); 
 const { resolveSoa } = require('dns');
+let connection;
 
 app.use(session({secret: "ssshhhhh", resave: false, 
 saveUninitialized: false 
@@ -24,25 +25,25 @@ app.use(bodyParser.json());
 
 //conexão com banco mysql
 function conectiondb(){
-    var con = mysql.createConnection({
-        host: 'localhost', 
-        user: 'root', 
-        password: '', 
-        database: 'caçaofertas' 
-    });
+    if (!connection || !connection.threadId) {
+        connection = mysql.createConnection({
+            host: 'localhost', 
+            user: 'root', 
+            password: '', 
+            database: 'caçaofertas' 
+        });
 
-   
-    con.connect((err) => {
-        if (err) {
-            console.log('Erro connecting to database...', err)
-            return
-        }
-        console.log('Connection established!')
-    });
+        connection.connect((err) => {
+            if (err) {
+                console.log('Erro connecting to database...', err);
+                return;
+            }
+            console.log('Connection established!')
+        });
+    }
 
-    return con;
+    return connection;
 }
-
 
 
 app.get('/', (req, res) => {
@@ -128,39 +129,40 @@ app.post('/register', function (req, res){
 // cadastro empresas
 
 
+
 // ... (seu código existente)
 
 // Rota para cadastrar uma empresa
-app.post('/cadastrar_empresas', async function (req, res)  {
-    console.log('Requisição recebida para cadastrar uma empresa.');
-    
-
+app.post('/cadastrar_empresas', async (req, res) => {
     const { nomeEmpresa, cnpj, setor, email, senha, cep } = req.body;
 
     try {
-        // Realizar chamada à API Consulta CEP para obter informações do endereço
-        const response = await axios.get(`https://h-apigateway.conectagov.estaleiro.serpro.gov.br/api-cep/v1/consulta/cep/${cep}`);
+        // Log para capturar o CEP utilizado na requisição
+        console.log('CEP utilizado:', cep);
+
+        const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
         const endereco = response.data;
 
-        // Obter a conexão com o banco de dados
-        const con = conectiondb();
+        // Certifique-se de que a conexão está estabelecida antes de usar connection.query
+        const connection = conectiondb();
 
         // Salvar dados no banco de dados
-        con.query('INSERT INTO empresas SET ?', {
+        connection.query('INSERT INTO empresas SET ?', {
             nome_empresa: nomeEmpresa,
             cnpj,
             setor,
             email,
             senha,
-            cep,
-            uf: endereco.uf,
-            cidade: endereco.cidade,
-            tipo_cep: endereco.tipoCep,
-            subtipo_cep: endereco.subTipoCep,
-            bairro: endereco.bairro,
-            endereco: endereco.endereco,
+            cep: endereco.cep,
+            logradouro: endereco.logradouro,
             complemento: endereco.complemento,
-            codigo_ibge: endereco.codigoIBGE
+            bairro: endereco.bairro,
+            localidade: endereco.localidade,
+            uf: endereco.uf,
+            ibge: endereco.ibge,
+            gia: endereco.gia,
+            ddd: endereco.ddd,
+            siafi: endereco.siafi
         }, (error, results, fields) => {
             if (error) {
                 console.error('Erro ao cadastrar empresa:', error);
@@ -169,9 +171,6 @@ app.post('/cadastrar_empresas', async function (req, res)  {
                 console.log('Empresa cadastrada com sucesso!');
                 res.status(200).send('Cadastro realizado com sucesso!');
             }
-
-            // Fechar a conexão após a consulta
-            con.end();
         });
 
     } catch (error) {
@@ -179,9 +178,6 @@ app.post('/cadastrar_empresas', async function (req, res)  {
         res.status(500).send('Erro ao consultar CEP. Por favor, tente novamente.');
     }
 });
-
-// ... (restante do seu código)
-
 
 //cadastro empresas fim
 
