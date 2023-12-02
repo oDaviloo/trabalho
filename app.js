@@ -2,6 +2,7 @@ const express = require('express');
 const session = require("express-session");
 const path = require('path');
 const app = express();
+const axios = require('axios');
 
 const bodyParser = require("body-parser");
 
@@ -124,6 +125,65 @@ app.post('/register', function (req, res){
     });
 });
 
+// cadastro empresas
+
+
+// ... (seu código existente)
+
+// Rota para cadastrar uma empresa
+app.post('/cadastrar_empresas', async function (req, res)  {
+    console.log('Requisição recebida para cadastrar uma empresa.');
+    
+
+    const { nomeEmpresa, cnpj, setor, email, senha, cep } = req.body;
+
+    try {
+        // Realizar chamada à API Consulta CEP para obter informações do endereço
+        const response = await axios.get(`https://h-apigateway.conectagov.estaleiro.serpro.gov.br/api-cep/v1/consulta/cep/${cep}`);
+        const endereco = response.data;
+
+        // Obter a conexão com o banco de dados
+        const con = conectiondb();
+
+        // Salvar dados no banco de dados
+        con.query('INSERT INTO empresas SET ?', {
+            nome_empresa: nomeEmpresa,
+            cnpj,
+            setor,
+            email,
+            senha,
+            cep,
+            uf: endereco.uf,
+            cidade: endereco.cidade,
+            tipo_cep: endereco.tipoCep,
+            subtipo_cep: endereco.subTipoCep,
+            bairro: endereco.bairro,
+            endereco: endereco.endereco,
+            complemento: endereco.complemento,
+            codigo_ibge: endereco.codigoIBGE
+        }, (error, results, fields) => {
+            if (error) {
+                console.error('Erro ao cadastrar empresa:', error);
+                res.status(500).send('Erro ao cadastrar empresa. Por favor, tente novamente.');
+            } else {
+                console.log('Empresa cadastrada com sucesso!');
+                res.status(200).send('Cadastro realizado com sucesso!');
+            }
+
+            // Fechar a conexão após a consulta
+            con.end();
+        });
+
+    } catch (error) {
+        console.error('Erro ao consultar CEP:', error.message);
+        res.status(500).send('Erro ao consultar CEP. Por favor, tente novamente.');
+    }
+});
+
+// ... (restante do seu código)
+
+
+//cadastro empresas fim
 
 
 app.post('/home', function (req, res){
