@@ -89,12 +89,8 @@ app.get('/cadastro_empresas', function(req, res) {
     res.render('views/cadastro_empresas');
 });
 
-//método post do register
-app.post('/register', function (req, res){
-
-    
-    
-
+// Método post do register para usuários
+app.post('/register', function (req, res) {
     var username = req.body.nome;
     var pass = req.body.pwd;
     var email = req.body.email;
@@ -104,33 +100,42 @@ app.post('/register', function (req, res){
 
     var con = conectiondb();
 
-    var queryConsulta = 'SELECT * FROM users WHERE email LIKE ?';
+    // Verificação se o email já existe na tabela 'users'
+    var queryUser = 'SELECT * FROM users WHERE email LIKE ?';
 
-    con.query(queryConsulta, [email], function (err, results){
-        if (results.length > 0){            
-            var message = 'E-mail já cadastrado';
+    con.query(queryUser, [email], function (err, resultsUser) {
+        if (resultsUser.length > 0) {
+            var message = 'E-mail já cadastrado como usuário';
             res.render('views/registro', { message: message });
-        }else{
-            var query = 'INSERT INTO users VALUES (DEFAULT, ?, ?, ?, ?, ?, ?)';
+        } else {
+            // Se o email não existe na tabela 'users', então verifica na tabela 'empresas'
+            var queryCompany = 'SELECT * FROM empresas WHERE email LIKE ?';
 
-            con.query(query, [username, email, idade, cidade, estado, pass], function (err, results){
-                if (err){
-                    throw err;
-                }else{
-                    console.log ("Usuario adicionado com email " + email);
-                    var message = "ok";
+            con.query(queryCompany, [email], function (err, resultsCompany) {
+                if (resultsCompany.length > 0) {
+                    var message = 'E-mail já cadastrado como empresa';
                     res.render('views/registro', { message: message });
-                }        
+                } else {
+                    // Se o email não existe em nenhuma das tabelas, realiza o cadastro na tabela 'users'
+                    var query = 'INSERT INTO users (username, email, idade, cidade, estado, pass, tipo_conta) VALUES (?, ?, ?, ?, ?, ?, ?)';
+
+                    con.query(query, [username, email, idade, cidade, estado, pass, 'user'], function (err, results) {
+                        if (err) {
+                            throw err;
+                        } else {
+                            console.log("Usuário adicionado com email " + email);
+                            var message = "ok";
+                            res.render('views/registro', { message: message });
+                        }
+                    });
+                }
             });
         }
     });
 });
 
+
 // cadastro empresas
-
-
-
-// ... (seu código existente)
 
 // Rota para cadastrar uma empresa
 app.post('/cadastrar_empresas', async (req, res) => {
@@ -140,36 +145,47 @@ app.post('/cadastrar_empresas', async (req, res) => {
         // Log para capturar o CEP utilizado na requisição
         console.log('CEP utilizado:', cep);
 
-        const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
+        const response = await axios.get(`https://viacep.com.br/ws/${cep}/json`);
         const endereco = response.data;
 
         // Certifique-se de que a conexão está estabelecida antes de usar connection.query
         const connection = conectiondb();
 
-        // Salvar dados no banco de dados
-        connection.query('INSERT INTO empresas SET ?', {
-            nome_empresa: nomeEmpresa,
-            cnpj,
-            setor,
-            email,
-            senha,
-            cep: endereco.cep,
-            logradouro: endereco.logradouro,
-            complemento: endereco.complemento,
-            bairro: endereco.bairro,
-            localidade: endereco.localidade,
-            uf: endereco.uf,
-            ibge: endereco.ibge,
-            gia: endereco.gia,
-            ddd: endereco.ddd,
-            siafi: endereco.siafi
-        }, (error, results, fields) => {
-            if (error) {
-                console.error('Erro ao cadastrar empresa:', error);
-                res.status(500).send('Erro ao cadastrar empresa. Por favor, tente novamente.');
+        // Verificar se o email já está cadastrado como usuário
+        const queryCheckUser = 'SELECT * FROM users WHERE email LIKE ?';
+        connection.query(queryCheckUser, [email], (err, resultsUser) => {
+            if (resultsUser.length > 0) {
+                // Se o email já estiver cadastrado como usuário, não permitir o cadastro como empresa
+                console.error('E-mail já cadastrado como usuário. Não é possível cadastrar como empresa.');
+                res.status(400).send('E-mail já cadastrado como usuário. Não é possível cadastrar como empresa.');
             } else {
-                console.log('Empresa cadastrada com sucesso!');
-                res.status(200).send('Cadastro realizado com sucesso!');
+                // Se o email não está cadastrado como usuário, prosseguir com o cadastro como empresa
+                connection.query('INSERT INTO empresas SET ?', {
+                    nome_empresa: nomeEmpresa,
+                    cnpj,
+                    setor,
+                    email,
+                    senha,
+                    cep: endereco.cep,
+                    logradouro: endereco.logradouro,
+                    complemento: endereco.complemento,
+                    bairro: endereco.bairro,
+                    localidade: endereco.localidade,
+                    uf: endereco.uf,
+                    ibge: endereco.ibge,
+                    gia: endereco.gia,
+                    ddd: endereco.ddd,
+                    siafi: endereco.siafi,
+                    tipo_conta: 'company' // Definindo o tipo de conta como 'company' para empresas
+                }, (error, results, fields) => {
+                    if (error) {
+                        console.error('Erro ao cadastrar empresa:', error);
+                        res.status(500).send('Erro ao cadastrar empresa. Por favor, tente novamente.');
+                    } else {
+                        console.log('Empresa cadastrada com sucesso!');
+                        res.redirect('/views/login'); // Redirecionar para a página de login após o cadastro bem-sucedido
+                    }
+                });
             }
         });
 
@@ -179,71 +195,54 @@ app.post('/cadastrar_empresas', async (req, res) => {
     }
 });
 
+
+
 //cadastro empresas fim
 
 
-app.post('/home', function (req, res){
- 
-    var email = req.body.email;
-    var pass = req.body.pass;
-   
-    var con = conectiondb();
-   
-    var query = 'SELECT * FROM users WHERE pass = ? AND email LIKE ?';
-    
-    
-    con.query(query, [pass, email], function (err, results){
-        if (results.length > 0){
-            req.session.user = email;         
-            console.log("Login feito com sucesso!");
-            res.render('views/home', {message:results});
-        }else{
-            var message = 'Login incorreto!';
-            res.render('views/login', { message: message });
-        }
-    });
-});
-
 app.post('/home', function (req, res) {
     var email = req.body.email;
     var pass = req.body.pass;
-   
+
     var con = conectiondb();
-   
-    var query = 'SELECT * FROM users WHERE pass = ? AND email LIKE ?';
-    
-    con.query(query, [pass, email], function (err, results) {
-        if (results.length > 0) {
-            req.session.user = email;         
-            console.log("Login feito com sucesso!");
-            res.redirect('/home'); // Redireciona para a página home após o login bem-sucedido
-        } else {
-            var message = 'Login incorreto!';
-            res.render('views/login', { message: message });
+
+    // Consulta para verificar na tabela 'users'
+    var queryUser = 'SELECT * FROM users WHERE pass = ? AND email LIKE ?';
+
+    // Consulta para verificar na tabela 'empresas'
+    var queryCompany = 'SELECT * FROM empresas WHERE senha = ? AND email LIKE ?';
+
+    con.query(queryUser, [pass, email], function (err, resultsUser) {
+        if (err) {
+            console.error('Erro ao consultar o banco de dados de usuários:', err);
+            res.render('views/login', { message: 'Erro ao realizar login. Por favor, tente novamente.' });
+            return;
         }
+
+        con.query(queryCompany, [pass, email], function (err, resultsCompany) {
+            if (err) {
+                console.error('Erro ao consultar o banco de dados de empresas:', err);
+                res.render('views/login', { message: 'Erro ao realizar login. Por favor, tente novamente.' });
+                return;
+            }
+
+            if (resultsUser.length > 0) {
+                // Se for um usuário normal, redirecione para a página home
+                req.session.user = email;
+                console.log('Login do usuário com sucesso!');
+                res.redirect('/views/home');
+            } else if (resultsCompany.length > 0) {
+                // Se for uma empresa, redirecione para a página de perfil da empresa
+                req.session.user = email;
+                console.log('Login da empresa com sucesso!');
+                res.redirect('/perfil_empresa'); // Altere para a rota correta da página de perfil da empresa
+            } else {
+                // Caso não seja encontrado nem na tabela 'users' nem na tabela 'empresas'
+                console.error('Login incorreto!');
+                res.render('views/login', { message: 'Login incorreto!' });
+            }
+        });
     });
-});
-
-app.get('/home', function (req, res) {
-    if (req.session.user) {
-        // Lógica para verificar se o usuário está logado
-        // Se estiver logado, renderize a página home
-        res.render('views/home');
-    } else {
-        // Se não estiver logado, redirecione para a página de login ou faça outro tratamento
-        res.redirect('/');
-    }
-});
-
-// Adicione também uma rota para lidar com o método POST na mesma rota '/home'
-app.post('/home', function (req, res) {
-    if (req.session.user) {
-        // Lógica para verificar se o usuário está logado
-        // Se estiver logado e o método POST for enviado para /home, faça algo aqui
-    } else {
-        // Se não estiver logado e o método POST for enviado para /home, redirecione para a página de login ou faça outro tratamento
-        res.redirect('/');
-    }
 });
 
 
