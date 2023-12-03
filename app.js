@@ -74,6 +74,28 @@ app.get("/views/login", function (req, res) {
     res.render('views/login', { message: message });
 });
 
+
+//tudo de gerenciar produtos
+
+// Rota para a página de gerenciamento de produtos da empresa logada
+app.get('/gerenciar_produtos/:nomeEmpresa', function (req, res) {
+    // Verificar se a empresa está logada
+    if (req.session.user) {
+        const nomeEmpresa = req.params.nomeEmpresa;
+        // Aqui você pode adicionar a lógica para renderizar a página de gerenciamento de produtos
+        // com base no nome da empresa recebido como parâmetro na URL
+        // Você pode passar o nome da empresa como uma variável para a página renderizada
+        res.render('views/gerenciar_produtos', { nomeEmpresa: nomeEmpresa });
+    } else {
+        // Redirecionar se a empresa não estiver logada
+        res.redirect("/");
+    }
+});
+
+
+//tudo de gerenciar produtos FIM
+
+
 // tudo de perfil empresa
 
 // Rota para o perfil da empresa
@@ -319,6 +341,9 @@ app.post('/delete', function (req, res) {
         res.redirect('/');
     });
 });
+
+
+
 
 // Executa o servidor
 app.listen(8081, () => console.log(`App listening on port 8081!`));
