@@ -3,177 +3,85 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerenciar Produtos</title>
-  <!-- Adicione os links para o Bootstrap CSS -->
+  <title>Gerenciamento de Produtos</title>
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Adicione o seu CSS personalizado aqui -->
-  <link href="caminho_para_seu_css.css" rel="stylesheet">
 </head>
 <body>
 
   <!-- Navbar -->
- 
-
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">
+      <img src="../images/perfeitinha2.svg" width="30" height="30" class="d-inline-block align-top" alt="Caça Ofertas Logo">
+      Nome da Empresa <!-- Aqui será exibido o nome da empresa -->
+    </a>
+    <!-- Links da Navbar -->
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="/perfil_empresa">Perfil</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/cadastro_produtos">Cadastrar Produtos</a>
+      </li>
+    </ul>
+  </nav>
 
   <!-- Listagem de Produtos -->
   <div class="container mt-4">
     <h2>Listagem de Produtos</h2>
+    <!-- Tabela para exibir os produtos -->
     <table class="table">
       <thead>
         <tr>
-          <th scope="col">Nome do Produto</th>
+          <th scope="col">Nome</th>
           <th scope="col">Disponibilidade</th>
           <th scope="col">Preço</th>
           <th scope="col">Quantidade</th>
-          <th scope="col">Ações</th>
+          <th scope="col">Ação</th>
         </tr>
       </thead>
       <tbody>
-        <!-- Aqui será preenchida dinamicamente com os produtos -->
-        <!-- Cada produto será uma linha na tabela -->
+        <!-- Linhas da tabela com dados dos produtos -->
+        <!-- Você precisará popular essas linhas com os dados dos produtos -->
       </tbody>
     </table>
   </div>
-
-<!-- Continuação da página gerenciar_produtos -->
-
-<!-- Botão para Adicionar Novo Produto -->
-<div class="container mt-4">
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addProductModal">Adicionar Novo Produto</button>
-  </div>
-  
-  <!-- Modal de Confirmação de Exclusão -->
-  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="deleteModalLabel">Confirmação de Exclusão</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          Tem certeza de que deseja excluir este produto? Esta ação é irreversível.
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-danger">Confirmar Exclusão</button>
-        </div>
+ <!-- Formulário de Edição/Adição de Produto -->
+ <div class="container mt-4">
+    <h2>Editar/Adicionar Produto</h2>
+    <form>
+      <!-- Campos editáveis pré-preenchidos -->
+      <div class="form-group">
+        <label for="nomeProduto">Nome do Produto</label>
+        <input type="text" class="form-control" id="nomeProduto">
       </div>
-    </div>
-  </div>
-  
-  <!-- Modal de Adicionar/Editar Produto -->
-  <div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-labelledby="addProductModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="addProductModalLabel">Adicionar Novo Produto</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <!-- Formulário de Adicionar/Editar Produto -->
-          <form id="productForm">
-            <!-- Campos do formulário -->
-            <div class="form-group">
-              <label for="productName">Nome do Produto</label>
-              <input type="text" class="form-control" id="productName">
-            </div>
-            <!-- Adicione outros campos do formulário -->
-            <!-- ... -->
-            <button type="submit" class="btn btn-primary">Salvar</button>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-
-<!-- Continuação da página gerenciar_produtos - Formulário de Adicionar/Editar Produto -->
-
-<!-- Dentro do form #productForm -->
-<!-- Adicione os campos necessários para adicionar/editar produtos -->
-<!-- ... -->
-
-<div class="form-group">
-    <label for="productDescription">Descrição do Produto</label>
-    <textarea class="form-control" id="productDescription" rows="3"></textarea>
-  </div>
-  
-  <div class="form-group">
-    <label for="productCategory">Categoria</label>
-    <input type="text" class="form-control" id="productCategory">
-  </div>
-  
-  <div class="form-group">
-    <label for="productPrice">Preço</label>
-    <input type="number" class="form-control" id="productPrice">
-  </div>
-  
-  <div class="form-group">
-    <label for="productQuantity">Quantidade</label>
-    <input type="number" class="form-control" id="productQuantity">
-  </div>
-  
-  <div class="form-group">
-    <label for="productImage">Imagem do Produto</label>
-    <input type="file" class="form-control-file" id="productImage">
-  </div>
-  
-  <div class="form-group">
-    <label for="productAvailability">Disponibilidade</label>
-    <select class="form-control" id="productAvailability">
-      <option value="disponível">Disponível</option>
-      <option value="indisponível">Indisponível</option>
-    </select>
-  </div>
-  
-  <div class="modal-footer">
-    <button type="submit" class="btn btn-primary">Salvar</button>
-    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-  </div>
-  
-
-          </form>
-        </div>
+      <div class="form-group">
+        <label for="disponibilidade">Disponibilidade</label>
+        <select class="form-control" id="disponibilidade">
+          <option value="disponível">Disponível</option>
+          <option value="indisponível">Indisponível</option>
+        </select>
       </div>
-    </div>
+      <div class="form-group">
+        <label for="preco">Preço</label>
+        <input type="text" class="form-control" id="preco">
+      </div>
+      <div class="form-group">
+        <label for="quantidade">Quantidade</label>
+        <input type="number" class="form-control" id="quantidade">
+      </div>
+      <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+      <button type="button" class="btn btn-danger">Excluir</button>
+    </form>
   </div>
-  
-  <script>
-    // Manipulação do modal de exclusão
-    $('#deleteModal').on('show.bs.modal', function (event) {
-      var button = $(event.relatedTarget); // Botão que acionou o modal
-      var recipient = button.data('whatever'); // Extração de informações dos atributos data-*
-  
-      var modal = $(this);
-      modal.find('.modal-footer button.btn-danger').on('click', function() {
-        // Aqui você pode realizar a lógica para exclusão do produto
-        // Exemplo: chamar uma função AJAX para excluir o produto com o ID recipient
-        console.log('Excluir produto com ID:', recipient);
-        $('#deleteModal').modal('hide');
-      });
-    });
-  
-    // Manipulação do modal de adicionar/editar produto
-    $('#addProductModal').on('show.bs.modal', function (event) {
-      var button = $(event.relatedTarget); // Botão que acionou o modal
-      var recipient = button.data('whatever'); // Extração de informações dos atributos data-*
-  
-      var modal = $(this);
-      modal.find('.modal-body #productForm').on('submit', function(event) {
-        event.preventDefault();
-        // Aqui você pode realizar a lógica para adicionar/editar o produto
-        // Exemplo: chamar uma função AJAX para enviar os dados do formulário para o backend
-        var formData = $(this).serialize();
-        console.log('Dados do formulário:', formData);
-        $('#addProductModal').modal('hide');
-      });
-    });
-  </script>
-  
-  <!-- Scripts do Bootstrap e do jQuery -->
+
+  <!-- Botão para Adicionar Novo Produto -->
+  <div class="container mt-4">
+    <button type="button" class="btn btn-success">Adicionar Novo Produto</button>
+  </div>
+
+  <!-- Scripts do Bootstrap e jQuery -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <!-- Seus scripts personalizados aqui -->
-  <script src="seu_script.js"></script>
 </body>
 </html>

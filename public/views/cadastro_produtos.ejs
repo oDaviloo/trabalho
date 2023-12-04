@@ -1,0 +1,99 @@
+<!-- cadastro_produtos.ejs -->
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro de Produtos</title>
+    <!-- Bootstrap CSS CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+  
+
+
+     <!-- Navbar -->
+    
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <!-- Logo do site à esquerda -->
+    <a class="navbar-brand" href="#">
+        <img src="../images/perfeitinha2.svg" width="200" height="50" class="d-inline-block align-top" alt="Logo">
+    </a>
+    
+    <!-- Nome da empresa centralizado -->
+    <div class="mx-auto">
+        <a class="navbar-brand" href="#"><%= nomeEmpresaLogada %></a> <!-- Exibição do nome da empresa logada -->
+    </div>
+    
+    <!-- Links da Navbar -->
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a class="nav-link" href="/perfil_empresa">Perfil</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/gerenciar_produtos/">Gerenciar Produtos</a>
+        </li>
+    </ul>
+</nav>
+
+<!-- Restante do seu código HTML -->
+
+
+
+    <div id="successMessage" class="alert alert-success" role="alert">
+        <% if (successMessage) { %>
+            <%= successMessage %>
+        <% } %>
+    </div>
+    
+
+    <div class="container mt-4">
+        <h1>Cadastro de Produtos</h1>
+        <form action="/cadastrar_produto" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="nomeProduto">Nome do Produto:</label>
+                <input type="text" class="form-control" id="nomeProduto" name="nome_produto" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="descricao">Descrição:</label>
+                <textarea class="form-control" id="descricao" name="descricao" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="preco">Preço:</label>
+                <input type="text" class="form-control" id="preco" name="preco" required>
+            </div>
+            <div class="form-group">
+                <label for="quantidade">Quantidade:</label>
+                <input type="number" class="form-control" id="quantidade" name="quantidade" required>
+            </div>
+            <div class="form-group">
+                <label for="foto">Foto:</label>
+                <input type="file" class="form-control-file" id="foto" name="foto">
+            </div>
+            <div class="form-group">
+                <label for="disponibilidade">Disponibilidade:</label>
+                <select class="form-control" id="disponibilidade" name="disponibilidade">
+                    <option value="disponível">Disponível</option>
+                    <option value="indisponível">Indisponível</option>
+                </select>
+            </div>
+            <input type="hidden" name="empresa_id" value="<%= empresa_id %>">
+            <button type="submit" class="btn btn-primary">Cadastrar Produto</button>
+        </form>
+        
+    </div>
+
+    <script>
+        // Espera 5 segundos e depois esconde a mensagem de sucesso
+        setTimeout(function() {
+            var successMessage = document.getElementById('successMessage');
+            if (successMessage) {
+                successMessage.style.display = 'none';
+            }
+        }, 5000); // 5000 milissegundos = 5 segundos
+    </script>
+    
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -55,48 +55,166 @@ app.get('/views/registro', (req, res) => {
     res.redirect('../');
 });
 
-// Rota para redirecionar a página de home após login
-app.get("/views/home", function (req, res) {
-    if (req.session.user) {
-        var con = conectiondb();
-        var query2 = 'SELECT * FROM users WHERE email LIKE ?';
-        con.query(query2, [req.session.user], function (err, results) {
-            res.render('views/home', { message: results });
-        });
-    } else {
-        res.redirect("/");
-    }
-});
-
 // Rota para a página de login
 app.get("/views/login", function (req, res) {
     var message = ' ';
     res.render('views/login', { message: message });
 });
 
+//rotas cadastro produto
 
-//tudo de gerenciar produtos
-
-// Rota para a página de gerenciamento de produtos da empresa logada
-app.get('/gerenciar_produtos/:nomeEmpresa', function (req, res) {
-    // Verificar se a empresa está logada
+app.get('/cadastro_produtos', function (req, res) {
     if (req.session.user) {
-        const nomeEmpresa = req.params.nomeEmpresa;
-        // Aqui você pode adicionar a lógica para renderizar a página de gerenciamento de produtos
-        // com base no nome da empresa recebido como parâmetro na URL
-        // Você pode passar o nome da empresa como uma variável para a página renderizada
-        res.render('views/gerenciar_produtos', { nomeEmpresa: nomeEmpresa });
+        const successMessage = req.session.successMessage; // Obtendo a mensagem de sucesso da sessão
+        req.session.successMessage = null; // Limpar a mensagem da sessão após exibi-la
+
+        // Obtendo o ID da empresa logada da sessão
+        const empresaId = req.session.empresa_id;
+
+        // Consultar o banco de dados para obter o nome da empresa usando o ID
+        const query = 'SELECT nome_empresa FROM empresas WHERE id = ?';
+
+        const connection = conectiondb();
+
+        connection.query(query, [empresaId], (error, results) => {
+            if (error) {
+                console.error('Erro ao obter nome da empresa:', error);
+                res.status(500).send('Erro ao obter nome da empresa. Tente novamente mais tarde.');
+            } else {
+                const nomeEmpresaLogada = results[0].nome_empresa; // Nome da empresa obtido do banco de dados
+
+                res.render('views/cadastro_produtos', { 
+                    empresa_id: empresaId,   
+                    successMessage: successMessage,
+                    nomeEmpresaLogada: nomeEmpresaLogada // Enviando o nome da empresa logada para o template
+                });
+            }
+        });
     } else {
-        // Redirecionar se a empresa não estiver logada
-        res.redirect("/");
+        res.redirect("/"); // Redirecionar se o usuário não estiver logado
+    }
+});
+// Rota para cadastrar um novo produto
+const multer = require('multer');
+
+// Configuração do Multer para salvar os arquivos na pasta 'uploads'
+const upload = multer({ dest: '.../uploads' }); // Ajuste o diretório conforme sua estrutura de pastas
+
+// ...
+
+// Rota para cadastrar um novo produto
+app.post('/cadastrar_produto', upload.single('foto'), async function (req, res) {
+    if (req.session.user) {
+        const { nome_produto, descricao, preco, quantidade, disponibilidade } = req.body;
+        const empresa_id = req.session.empresa_id; // Obtendo o ID da empresa logada
+
+        try {
+            // Certifique-se de que a conexão está estabelecida antes de usar connection.query
+            const connection = conectiondb();
+
+            // Recuperar o nome do arquivo da requisição
+            const foto = req.file.filename; // Nome do arquivo de imagem enviado
+
+            // Query para inserir um novo produto na tabela 'produtos'
+            const query = `INSERT INTO produtos (nome_produto, descricao, preco, quantidade, disponibilidade, foto, empresa_id) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+            const queryParams = [nome_produto, descricao, preco, quantidade, disponibilidade, foto, empresa_id];
+
+            connection.query(query, queryParams, (error, results) => {
+                if (error) {
+                    console.error('Erro ao cadastrar o produto:', error);
+                    res.status(500).send('Erro ao cadastrar o produto. Tente novamente mais tarde.');
+                } else {
+                    req.session.successMessage = 'Produto cadastrado com sucesso!'; // Adicione a mensagem de sucesso à sessão
+                    res.redirect('/cadastro_produtos'); // Redirecionar após o cadastro bem-sucedido
+                    
+                }
+            });
+
+        } catch (error) {
+            console.error('Erro ao cadastrar o produto:', error.message);
+            res.status(500).send('Erro ao cadastrar o produto. Tente novamente mais tarde.');
+        }
+    } else {
+        res.redirect("/"); // Redirecionar se o usuário não estiver logado
     }
 });
 
 
+//rotas cadastro produto FIM
+
+//rotas página gerenciar produtos  
+
+
+// Rota para a página de gerenciamento de produtos da empresa logada
+app.get('/gerenciar_produtos/', function (req, res) {
+    if (req.session.user) {
+        const nomeEmpresa = req.params.nomeEmpresa;
+        // Lógica para obter os produtos da empresa do banco de dados
+        const con = conectiondb();
+        const query = `SELECT * FROM empresa_produtos 
+                       JOIN produtos ON empresa_produtos.produto_id = produtos.id 
+                       WHERE empresa_produtos.empresa_id = (
+                           SELECT id FROM empresas WHERE nome_empresa = ?
+                       )`;
+
+        con.query(query, [nomeEmpresa], function (err, results) {
+            if (err) {
+                console.error('Erro ao obter produtos da empresa:', err);
+                res.status(500).send('Erro ao obter produtos da empresa. Tente novamente mais tarde.');
+            } else {
+                const products = results; // Dados dos produtos da empresa
+                res.render('views/gerenciar_produtos');
+            }
+        });
+    } else {
+        res.redirect("/"); // Redirecionar se o usuário não estiver logado
+    }
+});
+
+// Rota para atualizar informações de um produto
+app.post('/atualizar_produto', function (req, res) {
+    const { idProduto, nomeProduto, disponibilidade, preco, quantidade } = req.body;
+    // Lógica para atualizar as informações do produto no banco de dados
+    const connection = conectiondb();
+    const query = `UPDATE produtos 
+                    SET nome_produto = ?, disponibilidade = ?, preco = ?, quantidade = ? 
+                    WHERE id = ?`;
+
+    const queryParams = [nomeProduto, disponibilidade, preco, quantidade, idProduto];
+
+    connection.query(query, queryParams, (error, results) => {
+        if (error) {
+            console.error('Erro ao atualizar informações do produto:', error);
+            res.status(500).send('Erro ao atualizar informações do produto. Tente novamente mais tarde.');
+        } else {
+            res.redirect(`/gerenciar_produtos/`); // Redirecionar após a atualização bem-sucedida
+        }
+    });
+});
+
+// Rota para excluir um produto
+app.post('/excluir_produto', function (req, res) {
+    const idProduto = req.body.idProduto;
+    // Lógica para excluir o produto do banco de dados
+    const connection = conectiondb();
+    const query = `DELETE FROM produtos WHERE id = ?`;
+
+    connection.query(query, [idProduto], (error, results) => {
+        if (error) {
+            console.error('Erro ao excluir produto:', error);
+            res.status(500).send('Erro ao excluir produto. Tente novamente mais tarde.');
+        } else {
+            res.redirect(`/gerenciar_produtos/`); // Redirecionar após a exclusão bem-sucedida
+        }
+    });
+});
+
+
+
 //tudo de gerenciar produtos FIM
 
-
 // tudo de perfil empresa
+
 
 // Rota para o perfil da empresa
 app.get('/perfil_empresa', function (req, res) {
@@ -120,7 +238,7 @@ app.get('/perfil_empresa', function (req, res) {
                     bairro: profileData.bairro,
                     localidade: profileData.localidade,
                     nome_empresa: profileData.nome_empresa
-                    // Adicione aqui os outros campos necessários do perfil da empresa
+                    
                 });
             }
         });
@@ -134,7 +252,7 @@ app.post('/atualizar_empresa', async (req, res) => { // Adicionando a palavra-ch
     const { nomeEmpresa, cnpj, setor, senha, cep, numeroContato, numeroEndereco } = req.body;
 
     // Verificar se todos os campos obrigatórios estão preenchidos
-   
+
 
     try {
         // Log para capturar o CEP utilizado na requisição
@@ -194,76 +312,6 @@ app.post('/excluir_empresa', function (req, res) {
 
 
 
-// Rota para a página de cadastro de empresas
-app.get('/cadastro_empresas', function (req, res) {
-    // Lógica para renderizar a página de cadastro de empresas
-    res.render('views/cadastro_empresas');
-});
-
-// Método POST para cadastrar empresas
-app.post('/cadastrar_empresas', async (req, res) => {
-    const { nomeEmpresa, cnpj, setor, email, senha, cep, numeroContato, numeroEndereco } = req.body;
-
-   
-
-    try {
-        // Log para capturar o CEP utilizado na requisição
-        console.log('CEP utilizado:', cep);
-
-        const response = await axios.get(`https://viacep.com.br/ws/${cep}/json`);
-        const endereco = response.data;
-
-        // Certifique-se de que a conexão está estabelecida antes de usar connection.query
-        const connection = conectiondb();
-
-        // Verificar se o email já está cadastrado como usuário
-        const queryCheckUser = 'SELECT * FROM users WHERE email LIKE ?';
-        connection.query(queryCheckUser, [email], (err, resultsUser) => {
-            if (resultsUser.length > 0) {
-                // Se o email já estiver cadastrado como usuário, não permitir o cadastro como empresa
-                console.error('E-mail já cadastrado como usuário. Não é possível cadastrar como empresa.');
-                res.status(400).send('E-mail já cadastrado como usuário. Não é possível cadastrar como empresa.');
-            } else {
-                // Se o email não está cadastrado como usuário, prosseguir com o cadastro como empresa
-                connection.query('INSERT INTO empresas SET ?', {
-                    nome_empresa: nomeEmpresa,
-                    cnpj,
-                    setor,
-                    email,
-                    senha,
-                    cep: endereco.cep,
-                    logradouro: endereco.logradouro,
-                    complemento: endereco.complemento,
-                    bairro: endereco.bairro,
-                    localidade: endereco.localidade,
-                    uf: endereco.uf,
-                    ibge: endereco.ibge,
-                    gia: endereco.gia,
-                    ddd: endereco.ddd,
-                    siafi: endereco.siafi,
-                    tipo_conta: 'company', // Definindo o tipo de conta como 'company' para empresas
-                    numero_contato: numeroContato,
-                    numero_endereco: numeroEndereco
-                }, (error, results, fields) => {
-                    if (error) {
-                        console.error('Erro ao cadastrar empresa:', error);
-                        res.status(500).json({ success: false, message: 'Erro ao cadastrar empresa. Por favor, tente novamente.' });
-                    } else {
-                        console.log('Empresa cadastrada com sucesso!');
-                        // Exibindo a mensagem de sucesso sem redirecionamento
-                        res.render('views/login', { message: 'Cadastro realizado com sucesso. Faça login para entrar.' });
-
-                    }
-                });
-            }
-        });
-    } catch (error) {
-        console.error('Erro ao consultar CEP:', error.message);
-        res.status(500).send('Erro ao consultar CEP. Por favor, tente novamente.');
-    }
-});
-
-
 
 // Rota para o login
 app.post('/home', function (req, res) {
@@ -300,8 +348,25 @@ app.post('/home', function (req, res) {
             } else if (resultsCompany.length > 0) {
                 // Se for uma empresa, redirecione para a página de perfil da empresa
                 req.session.user = email;
-                console.log('Login da empresa com sucesso!');
-                res.redirect('/perfil_empresa'); // Altere para a rota correta da página de perfil da empresa
+
+                // Aqui você precisa obter o ID da empresa após a consulta no banco de dados
+                const empresaIdQuery = 'SELECT id FROM empresas WHERE email = ?';
+                con.query(empresaIdQuery, [email], function (err, result) {
+                    if (err) {
+                        console.error('Erro ao obter o ID da empresa:', err);
+                        res.render('views/login', { message: 'Erro ao realizar login. Por favor, tente novamente.' });
+                        return;
+                    }
+
+                    if (result.length > 0) {
+                        req.session.empresa_id = result[0].id; // Defina o empresa_id na sessão
+                        console.log('Login da empresa com sucesso!');
+                        res.redirect('/perfil_empresa'); // Altere para a rota correta da página de perfil da empresa
+                    } else {
+                        console.error('Empresa não encontrada!');
+                        res.render('views/login', { message: 'Erro ao realizar login. Por favor, tente novamente.' });
+                    }
+                });
             } else {
                 // Caso não seja encontrado nem na tabela 'users' nem na tabela 'empresas'
                 console.error('Login incorreto!');
@@ -311,36 +376,7 @@ app.post('/home', function (req, res) {
     });
 });
 
-// Rota para atualização de informações de usuário
-app.post('/update', function (req, res) {
-    var email = req.body.email;
-    var pass = req.body.pwd;
-    var username = req.body.nome;
-    var idade = req.body.idade;
-    var cidade = req.body.cidade;
-    var estado = req.body.estado;
 
-    var con = conectiondb();
-
-    var query = 'UPDATE users SET username = ?, pass = ?, idade = ? WHERE email LIKE ?';
-
-    con.query(query, [username, pass, idade, req.session.user], function (err, results) {
-        var query2 = 'SELECT * FROM users WHERE email LIKE ?';
-        con.query(query2, [req.session.user], function (err, results) {
-            res.render('views/home', { message: results });
-        });
-    });
-});
-
-// Rota para exclusão de conta de usuário
-app.post('/delete', function (req, res) {
-    var username = req.body.nome;
-    var con = conectiondb();
-    var query = 'DELETE FROM users WHERE email LIKE ?';
-    con.query(query, [req.session.user], function (err, results) {
-        res.redirect('/');
-    });
-});
 
 
 
