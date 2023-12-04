@@ -98,9 +98,8 @@ app.get('/cadastro_produtos', function (req, res) {
 const multer = require('multer');
 
 // Configuração do Multer para salvar os arquivos na pasta 'uploads'
-const upload = multer({ dest: '.../uploads' }); // Ajuste o diretório conforme sua estrutura de pastas
+const upload = multer({ dest: 'uploads/' }); // Ajuste o diretório conforme sua estrutura de pastas
 
-// ...
 
 // Rota para cadastrar um novo produto
 app.post('/cadastrar_produto', upload.single('foto'), async function (req, res) {
@@ -256,7 +255,7 @@ app.post('/atualizar_empresa', async (req, res) => { // Adicionando a palavra-ch
 
     try {
         // Log para capturar o CEP utilizado na requisição
-        console.log('CEP utilizado:', cep);
+        console.log('CEP utilizado:', cep);update
 
         const response = await axios.get(`https://viacep.com.br/ws/${cep}/json`);
         const endereco = response.data;
