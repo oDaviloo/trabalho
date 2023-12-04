@@ -344,9 +344,26 @@ app.post('/excluir_empresa', function (req, res) {
 // tudo de perfil empresa FIM
 
 
-
+// Rota para redirecionar a página de home após login
+app.get("/views/home", function (req, res) {
+    if (req.session.user) {
+        var con = conectiondb();
+        var query2 = 'SELECT * FROM users WHERE email LIKE ?';
+        con.query(query2, [req.session.user], function (err, results) {
+            res.render('views/home', { message: results });
+        });
+    } else {
+        res.redirect("/");
+    }
+});
 
 // Rota para o login
+
+app.get('/home', (req, res) => {
+    // Aqui você pode adicionar lógica para obter dados dinâmicos para exibir na página home, se necessário
+    res.render('views/home');
+});
+
 app.post('/home', function (req, res) {
     var email = req.body.email;
     var pass = req.body.pass;
@@ -406,6 +423,42 @@ app.post('/home', function (req, res) {
                 res.render('views/login', { message: 'Login incorreto!' });
             }
         });
+    });
+});
+
+
+
+// Rota para atualização de informações de usuário
+app.post('/update', function (req, res) {
+    var email = req.body.email;
+    var pass = req.body.pwd;
+    var username = req.body.nome;
+    var idade = req.body.idade;
+    var cidade = req.body.cidade;
+    var estado = req.body.estado;
+
+    var con = conectiondb();
+
+    var query = 'UPDATE users SET username = ?, pass = ?, idade = ? WHERE email LIKE ?';
+
+    con.query(query, [username, pass, idade, req.session.user], function (err, results) {
+        var query2 = 'SELECT * FROM users WHERE email LIKE ?';
+        con.query(query2, [req.session.user], function (err, results) {
+            res.render('views/home', { message: results });
+        });
+    });
+});
+
+
+
+
+// Rota para exclusão de conta de usuário
+app.post('/delete', function (req, res) {
+    var username = req.body.nome;
+    var con = conectiondb();
+    var query = 'DELETE FROM users WHERE email LIKE ?';
+    con.query(query, [req.session.user], function (err, results) {
+        res.redirect('/');
     });
 });
 
