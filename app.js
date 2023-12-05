@@ -61,6 +61,53 @@ app.get("/views/login", function (req, res) {
     res.render('views/login', { message: message });
 });
 
+
+// Rota para obter produtos em destaque
+app.get('/produtos_destaque', (req, res) => {
+    const query = 'SELECT * FROM produtos ORDER BY RAND() LIMIT 5';
+  
+    connection.query(query, (error, results) => {
+      if (error) {
+        console.error('Erro ao obter produtos em destaque:', error);
+        res.status(500).send('Erro ao obter produtos em destaque. Tente novamente mais tarde.');
+      } else {
+        res.json(results);
+      }
+    });
+  });
+  
+  // Rota para obter categorias de produtos
+  app.get('/categorias', (req, res) => {
+    const query = 'SELECT DISTINCT setor FROM empresas';
+  
+    connection.query(query, (error, results) => {
+      if (error) {
+        console.error('Erro ao obter categorias:', error);
+        res.status(500).send('Erro ao obter categorias. Tente novamente mais tarde.');
+      } else {
+        res.json(results);
+      }
+    });
+  });
+  
+  // Rota para obter produtos de uma categoria específica
+  app.get('/produtos_por_categoria/:categoria', (req, res) => {
+    const { categoria } = req.params;
+    const query = 'SELECT * FROM produtos WHERE empresa_id IN (SELECT id FROM empresas WHERE setor = ?) LIMIT 8';
+  
+    connection.query(query, [categoria], (error, results) => {
+      if (error) {
+        console.error('Erro ao obter produtos por categoria:', error);
+        res.status(500).send('Erro ao obter produtos por categoria. Tente novamente mais tarde.');
+      } else {
+        res.json(results);
+      }
+    });
+  });
+
+
+
+
 //rotas cadastro produto
 
 app.get('/cadastro_produtos', function (req, res) {
@@ -141,97 +188,7 @@ app.post('/cadastrar_produto', upload.single('foto'), async function (req, res) 
 
 //rotas cadastro produto FIM
 
-//rotas página gerenciar produtos  
 
-// Rota para exibir a página de gerenciamento de produtos
-app.get('/gerenciar_produtos', function (req, res) {
-    if (req.session.user) {
-        const con = conectiondb();
-        const queryEmpresa = 'SELECT nome_empresa FROM empresas WHERE id = ?'; // Consulta para obter o nome da empresa
-        const queryProdutos = 'SELECT * FROM produtos WHERE empresa_id = ?'; // Consulta para buscar produtos por ID da empresa
-
-        con.query(queryEmpresa, [req.session.empresa_id], function (errEmpresa, resultsEmpresa) {
-            if (errEmpresa) {
-                console.error('Erro ao obter nome da empresa:', errEmpresa);
-                res.status(500).send('Erro ao obter nome da empresa. Tente novamente mais tarde.');
-            } else {
-                const nomeEmpresaLogada = resultsEmpresa[0].nome_empresa; // Nome da empresa obtido do banco de dados
-
-                con.query(queryProdutos, [req.session.empresa_id], function (errProdutos, resultsProdutos) {
-                    if (errProdutos) {
-                        console.error('Erro ao obter produtos:', errProdutos);
-                        res.status(500).send('Erro ao obter produtos. Tente novamente mais tarde.');
-                    } else {
-                        const products = resultsProdutos; // Dados dos produtos da empresa
-                        res.render('views/gerenciar_produtos', { 
-                            products: products,
-                            nomeEmpresaLogada: nomeEmpresaLogada // Enviando o nome da empresa logada para o template
-                        });
-                    }
-                });
-            }
-        });
-    } else {
-        res.redirect("/"); // Redirecionar se o usuário não estiver logado
-    }
-});
-
-
-// Rota para editar um produto
-app.post('/editar_produto', function (req, res) {
-    if (req.session.user) {
-        const { produtoId, nome_produto, descricao, preco, quantidade, disponibilidade } = req.body;
-
-        try {
-            // Certifique-se de que a conexão está estabelecida antes de usar connection.query
-            const connection = conectiondb();
-
-            // Query para atualizar os dados do produto na tabela 'produtos'
-            const query = `UPDATE produtos 
-                            SET nome_produto = ?, descricao = ?, preco = ?, quantidade = ?, disponibilidade = ?
-                            WHERE id = ?`;
-            const queryParams = [nome_produto, descricao, preco, quantidade, disponibilidade, produtoId];
-
-            connection.query(query, queryParams, (error, results) => {
-                if (error) {
-                    console.error('Erro ao atualizar o produto:', error);
-                    res.status(500).send('Erro ao atualizar o produto. Tente novamente mais tarde.');
-                } else {
-                    res.redirect('/gerenciar_produtos'); // Redirecionar após a atualização bem-sucedida
-                }
-            });
-
-        } catch (error) {
-            console.error('Erro ao editar o produto:', error.message);
-            res.status(500).send('Erro ao editar o produto. Tente novamente mais tarde.');
-        }
-    } else {
-        res.redirect("/"); // Redirecionar se o usuário não estiver logado
-    }
-});
-
-
-// Rota para excluir um produto
-app.post('/excluir_produto', function (req, res) {
-    const idProduto = req.body.idProduto;
-    // Lógica para excluir o produto do banco de dados
-    const connection = conectiondb();
-    const query = `DELETE FROM produtos WHERE id = ?`;
-
-    connection.query(query, [idProduto], (error, results) => {
-        if (error) {
-            console.error('Erro ao excluir produto:', error);
-            res.status(500).send('Erro ao excluir produto. Tente novamente mais tarde.');
-        } else {
-            res.redirect('/gerenciar_produtos'); // Redirecionar após a exclusão bem-sucedida
-        }
-    });
-});
-
-
-
-
-//tudo de gerenciar produtos FIM
 
 // tudo de perfil empresa
 
@@ -428,39 +385,6 @@ app.post('/home', function (req, res) {
 
 
 
-// Rota para atualização de informações de usuário
-app.post('/update', function (req, res) {
-    var email = req.body.email;
-    var pass = req.body.pwd;
-    var username = req.body.nome;
-    var idade = req.body.idade;
-    var cidade = req.body.cidade;
-    var estado = req.body.estado;
-
-    var con = conectiondb();
-
-    var query = 'UPDATE users SET username = ?, pass = ?, idade = ? WHERE email LIKE ?';
-
-    con.query(query, [username, pass, idade, req.session.user], function (err, results) {
-        var query2 = 'SELECT * FROM users WHERE email LIKE ?';
-        con.query(query2, [req.session.user], function (err, results) {
-            res.render('views/home', { message: results });
-        });
-    });
-});
-
-
-
-
-// Rota para exclusão de conta de usuário
-app.post('/delete', function (req, res) {
-    var username = req.body.nome;
-    var con = conectiondb();
-    var query = 'DELETE FROM users WHERE email LIKE ?';
-    con.query(query, [req.session.user], function (err, results) {
-        res.redirect('/');
-    });
-});
 
 
 
