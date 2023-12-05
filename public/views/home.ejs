@@ -86,7 +86,7 @@
                 aria-label="Slide 2"></button>
             <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2"
                 aria-label="Slide 3"></button>
-            <!-- Adicione mais botões de indicadores conforme necessário -->
+          
         </div>
         <div class="carousel-inner">
             <div class="carousel-item active">
@@ -146,7 +146,7 @@
                         <img id="produto1" src="URL_DA_IMAGEM_DO_BANCO" class="card-img-top" alt="Nome do Produto">
                     </a>
                     <div class="card-body">
-                        <h5 class="card-title">Nome do Produto</h5>
+                        <h5 class="card-title" id="produtoTitulo1">Nome do Produto</h5>
                         <p class="card-text">Descrição breve do produto.</p>
                     </div>
                 </div>
@@ -155,6 +155,7 @@
         <!-- Adicione mais cards de produto aqui -->
     </div>
 </div>
+
     <!-- Rodapé -->
     <footer class="bg-light text-center text-lg-start mt-5">
         <div class="text-center p-3">
@@ -166,6 +167,64 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        // Adiciona um evento de clique aos cards de categoria em destaque
+        document.querySelectorAll('.card-categoria a').forEach(item => {
+            item.addEventListener('click', function (event) {
+                event.preventDefault(); // Previne o comportamento padrão do link
+                const categoriaNome = extrairNomeDoTitulo(item); // Extrai o nome da categoria do título do card
+                redirecionarParaCategorias(categoriaNome);
+            });
+        });
+
+        // Função para enviar o nome da categoria para a página categorias.ejs
+        function redirecionarParaCategorias(categoriaNome) {
+            // Aqui você pode redirecionar para a página categorias.ejs e passar o nome da categoria como parâmetro
+            // Substitua a URL conforme necessário
+            window.location.href = `/categorias?categoria=${categoriaNome}`;
+        }
+
+        // Função para extrair o nome da categoria do título do card
+        function extrairNomeDoTitulo(item) {
+            // Extrai o texto do título do card
+            const titulo = item.querySelector('.card-title').innerText;
+            return titulo; // Retorna o texto do título como o nome da categoria
+        }
+    </script>
+
+
+<script>
+    // Adiciona um evento de clique aos cards de produto em destaque
+    document.querySelectorAll('.card-link').forEach(item => {
+        item.addEventListener('click', function(event) {
+            event.preventDefault(); // Previne o comportamento padrão do link
+            const nomeProduto = extrairNomeDoTituloProduto(item); // Extrai o nome do produto do título do card
+            console.log('Nome do produto clicado:', nomeProduto);
+            // Aqui você pode fazer o que deseja com o nome do produto, como armazená-lo em uma variável ou enviar para o backend
+            // Redirecionamento ou outra ação necessária com o nome do produto clicado
+        });
+    });
+
+    // Função para extrair o nome do produto do título do card
+    function extrairNomeDoTituloProduto(item) {
+        // Extrai o texto do título do card
+        const tituloProduto = item.querySelector('.produto-title').innerText;
+        return tituloProduto; // Retorna o texto do título como o nome do produto
+    }
+
+    // Captura o nome do produto ao clicar no link do carousel
+    document.querySelectorAll('.carousel-caption h5').forEach(item => {
+        item.addEventListener('click', function(event) {
+            event.preventDefault(); // Previne o comportamento padrão do link
+            const nomeProdutoCarousel = item.innerText;
+            console.log('Nome do produto do carousel clicado:', nomeProdutoCarousel);
+            // Aqui você pode fazer o que deseja com o nome do produto do carousel
+        });
+    });
+</script>
+
+    
 </body>
 
 </html>

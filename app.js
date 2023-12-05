@@ -339,9 +339,44 @@ app.post('/home', function (req, res) {
 });
 
 
+//rotas das páginas home || categorias || produtos
 
+// Rota para renderizar a página de produtos com os detalhes dos produtos e suas respectivas empresas
+app.get('/produtos/:id', function (req, res) {
+    const productId = req.params.id;
 
+    // Certifique-se de que a conexão está estabelecida antes de usar connection.query
+    const connection = conectiondb();
 
+    // Consulta para obter os detalhes do produto com base no ID
+    const queryProduto = 'SELECT * FROM produtos WHERE id = ?';
+
+    connection.query(queryProduto, [productId], (errorProduto, resultsProduto) => {
+        if (errorProduto) {
+            console.error('Erro ao buscar detalhes do produto:', errorProduto);
+            res.status(500).send('Erro ao buscar detalhes do produto. Tente novamente mais tarde.');
+        } else {
+            const nomeProduto = resultsProduto[0].nome_produto;
+
+            // Consulta para obter as empresas com produtos semelhantes ao produto clicado
+            const queryEmpresas = `SELECT p.nome_produto, p.preco, p.descricao, p.disponibilidade, e.nome_empresa
+                                   FROM empresas e
+                                   INNER JOIN empresa_produtos ep ON e.id = ep.empresa_id
+                                   INNER JOIN produtos p ON ep.produto_id = p.id
+                                   WHERE p.nome_produto LIKE ? AND p.id != ?`;
+
+            connection.query(queryEmpresas, [`%${nomeProduto}%`, productId], (errorEmpresas, resultsEmpresas) => {
+                if (errorEmpresas) {
+                    console.error('Erro ao buscar empresas com produtos semelhantes:', errorEmpresas);
+                    res.status(500).send('Erro ao buscar empresas com produtos semelhantes. Tente novamente mais tarde.');
+                } else {
+                    // Renderizar a página de produtos com os detalhes do produto e empresas relacionadas
+                    res.render('views/produtos', { detalhesProduto: resultsProduto, empresasRelacionadas: resultsEmpresas });
+                }
+            });
+        }
+    });
+});
 
 
 
