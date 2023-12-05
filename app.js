@@ -62,51 +62,6 @@ app.get("/views/login", function (req, res) {
 });
 
 
-// Rota para obter produtos em destaque
-app.get('/produtos_destaque', (req, res) => {
-    const query = 'SELECT * FROM produtos ORDER BY RAND() LIMIT 5';
-  
-    connection.query(query, (error, results) => {
-      if (error) {
-        console.error('Erro ao obter produtos em destaque:', error);
-        res.status(500).send('Erro ao obter produtos em destaque. Tente novamente mais tarde.');
-      } else {
-        res.json(results);
-      }
-    });
-  });
-  
-  // Rota para obter categorias de produtos
-  app.get('/categorias', (req, res) => {
-    const query = 'SELECT DISTINCT setor FROM empresas';
-  
-    connection.query(query, (error, results) => {
-      if (error) {
-        console.error('Erro ao obter categorias:', error);
-        res.status(500).send('Erro ao obter categorias. Tente novamente mais tarde.');
-      } else {
-        res.json(results);
-      }
-    });
-  });
-  
-  // Rota para obter produtos de uma categoria específica
-  app.get('/produtos_por_categoria/:categoria', (req, res) => {
-    const { categoria } = req.params;
-    const query = 'SELECT * FROM produtos WHERE empresa_id IN (SELECT id FROM empresas WHERE setor = ?) LIMIT 8';
-  
-    connection.query(query, [categoria], (error, results) => {
-      if (error) {
-        console.error('Erro ao obter produtos por categoria:', error);
-        res.status(500).send('Erro ao obter produtos por categoria. Tente novamente mais tarde.');
-      } else {
-        res.json(results);
-      }
-    });
-  });
-
-
-
 
 //rotas cadastro produto
 
