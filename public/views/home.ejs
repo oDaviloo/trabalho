@@ -111,50 +111,35 @@
             <span class="visually-hidden">Next</span>
         </button>
     </div>
-    <!-- Destaque de Categorias -->
-<div class="container mt-5">
-    <h2>Destaque de Categorias</h2>
-    <div class="row mt-4">
-        <!-- Exemplo de Categoria Card -->
-        <!-- Apenas a imagem do card será o link para a página de produtos -->
-        <div class="col-md-3 mb-3">
-            <a href="/categorias"> <!-- Link temporário -->
-                <div class="card">
-                    <a href="/categorias">
-                        <img id="categoria1" src="URL_DA_IMAGEM_DO_BANCO" class="card-img-top" alt="Categoria 1">
-                    </a>
-                    <div class="card-body">
-                        <h5 class="card-title">Categoria 1</h5>
-                        <p class="card-text">Descrição da Categoria.</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <!-- Adicione mais cards de categoria aqui -->
-    </div>
-</div>
+   
+<!-- Exemplo de uso na página HTML -->
+<img id="produto-imagem" src="/imagem_produto/50" alt="Imagem do Produto">
+
+
 
 <div class="container mt-5">
     <h2>Produtos em Destaque</h2>
-    <div class="row mt-4">
-        <!-- Exemplo de Produto Card -->
-        <!-- Apenas a imagem do card será o link para a página do produto -->
-        <div class="col-md-3 mb-3">
-            <a href="/produtos"> <!-- Link temporário -->
-                <div class="card">
-                    <a href="/produtos">
-                        <img id="produto1" src="URL_DA_IMAGEM_DO_BANCO" class="card-img-top" alt="Nome do Produto">
-                    </a>
-                    <div class="card-body">
-                        <h5 class="card-title" id="produtoTitulo1">Nome do Produto</h5>
-                        <p class="card-text">Descrição breve do produto.</p>
+    <div class="row mt-4" id="destaqueProdutos">
+        <% for (let i = 0; i < produtos.length; i++) { %>
+            <div class="col-md-3 mb-3">
+                <a href="/produto/<%= produtos[i].id %>">
+                    <div class="card">
+                        <a href="/produto/<%= produtos[i].id %>">
+                            <!-- Atualização para utilizar a imagem no formato base64 -->
+                            <img src="data:image/jpeg;base64, <%= produtos[i].foto %>" class="card-img-top" alt="<%= produtos[i].nome_produto %>">
+                        </a>
+                        <div class="card-body">
+                            <h5 class="card-title"><%= produtos[i].nome_produto %></h5>
+                            <p class="card-text"><%= produtos[i].descricao %></p>
+                            <!-- Adicione outras informações do produto, como preço, quantidade, etc. -->
+                        </div>
                     </div>
-                </div>
-            </a>
-        </div>
-        <!-- Adicione mais cards de produto aqui -->
+                </a>
+            </div>
+        <% } %>
     </div>
 </div>
+
 
     <!-- Rodapé -->
     <footer class="bg-light text-center text-lg-start mt-5">
@@ -223,8 +208,3 @@
         });
     });
 </script>
-
-    
-</body>
-
-</html>

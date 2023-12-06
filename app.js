@@ -5,6 +5,7 @@ const app = express();
 const axios = require('axios');
 const bodyParser = require("body-parser");
 const mysql = require("mysql");
+const fs = require('fs'); // Módulo para manipular arquivos
 let connection;
 
 app.use(session({
@@ -96,38 +97,43 @@ app.get('/cadastro_produtos', function (req, res) {
         res.redirect("/"); // Redirecionar se o usuário não estiver logado
     }
 });
-// Rota para cadastrar um novo produto
-const multer = require('multer');
-
-// Configuração do Multer para salvar os arquivos na pasta 'uploads'
-const upload = multer({ dest: 'uploads/' }); // Ajuste o diretório conforme sua estrutura de pastas
-
-
-// Rota para cadastrar um novo produto
-app.post('/cadastrar_produto', upload.single('foto'), async function (req, res) {
+app.post('/cadastrar_produto', async function (req, res) {
     if (req.session.user) {
         const { nome_produto, descricao, preco, quantidade, disponibilidade } = req.body;
         const empresa_id = req.session.empresa_id; // Obtendo o ID da empresa logada
 
         try {
-            // Certifique-se de que a conexão está estabelecida antes de usar connection.query
             const connection = conectiondb();
 
-            // Recuperar o nome do arquivo da requisição
-            const foto = req.file.filename; // Nome do arquivo de imagem enviado
+            // Lendo o arquivo e convertendo para base64
+            const fotoBuffer = req.files.foto.data; // dados do arquivo
+
+            const fotoBase64 = fotoBuffer.toString('base64'); // Convertendo para base64
 
             // Query para inserir um novo produto na tabela 'produtos'
             const query = `INSERT INTO produtos (nome_produto, descricao, preco, quantidade, disponibilidade, foto, empresa_id) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-            const queryParams = [nome_produto, descricao, preco, quantidade, disponibilidade, foto, empresa_id];
+            const queryParams = [nome_produto, descricao, preco, quantidade, disponibilidade, fotoBase64, empresa_id];
 
             connection.query(query, queryParams, (error, results) => {
                 if (error) {
                     console.error('Erro ao cadastrar o produto:', error);
                     res.status(500).send('Erro ao cadastrar o produto. Tente novamente mais tarde.');
                 } else {
-                    req.session.successMessage = 'Produto cadastrado com sucesso!'; // Adicione a mensagem de sucesso à sessão
-                    res.redirect('/cadastro_produtos'); // Redirecionar após o cadastro bem-sucedido
-                    
+                    const productId = results.insertId;
+
+                    // Inserir um novo registro na tabela 'empresa_produtos' associando o produto à empresa correspondente
+                    const insertEmpresaProdutoQuery = 'INSERT INTO empresa_produtos (empresa_id, produto_id) VALUES (?, ?)';
+                    const insertEmpresaProdutoParams = [empresa_id, productId];
+
+                    connection.query(insertEmpresaProdutoQuery, insertEmpresaProdutoParams, (err, result) => {
+                        if (err) {
+                            console.error('Erro ao associar produto à empresa:', err);
+                            res.status(500).send('Erro ao associar produto à empresa. Tente novamente mais tarde.');
+                        } else {
+                            req.session.successMessage = 'Produto cadastrado com sucesso!';
+                            res.redirect('/cadastro_produtos');
+                        }
+                    });
                 }
             });
 
@@ -256,25 +262,11 @@ app.post('/excluir_empresa', function (req, res) {
 // tudo de perfil empresa FIM
 
 
-// Rota para redirecionar a página de home após login
-app.get("/views/home", function (req, res) {
-    if (req.session.user) {
-        var con = conectiondb();
-        var query2 = 'SELECT * FROM users WHERE email LIKE ?';
-        con.query(query2, [req.session.user], function (err, results) {
-            res.render('views/home', { message: results });
-        });
-    } else {
-        res.redirect("/");
-    }
-});
+
 
 // Rota para o login
 
-app.get('/home', (req, res) => {
-    // Aqui você pode adicionar lógica para obter dados dinâmicos para exibir na página home, se necessário
-    res.render('views/home');
-});
+
 
 app.post('/home', function (req, res) {
     var email = req.body.email;
@@ -294,17 +286,20 @@ app.post('/home', function (req, res) {
             res.render('views/login', { message: 'Erro ao realizar login. Por favor, tente novamente.' });
             return;
         }
-
+    
         con.query(queryCompany, [pass, email], function (err, resultsCompany) {
             if (err) {
                 console.error('Erro ao consultar o banco de dados de empresas:', err);
                 res.render('views/login', { message: 'Erro ao realizar login. Por favor, tente novamente.' });
                 return;
             }
-
+    
             if (resultsUser.length > 0) {
                 // Se for um usuário normal, redirecione para a página home
                 req.session.user = email;
+                // Obtenha a cidade do usuário após o login e armazene na sessão
+                const cidadeDoUsuario = resultsUser[0].cidade; // Supondo que a coluna seja chamada 'cidade' na tabela 'users'
+                req.session.cidade = cidadeDoUsuario; // Armazene a cidade do usuário na sessão corretamente
                 console.log('Login do usuário com sucesso!');
                 res.redirect('/views/home');
             } else if (resultsCompany.length > 0) {
@@ -341,37 +336,79 @@ app.post('/home', function (req, res) {
 
 //rotas das páginas home || categorias || produtos
 
-// Rota para renderizar a página de produtos com os detalhes dos produtos e suas respectivas empresas
-app.get('/produtos/:id', function (req, res) {
-    const productId = req.params.id;
 
-    // Certifique-se de que a conexão está estabelecida antes de usar connection.query
-    const connection = conectiondb();
+// Rota para renderizar a página home após o login
+app.get('/views/home', function (req, res) {
+    if (req.session.user) {
+        console.log('Cidade do usuário:', req.session.cidade);
 
-    // Consulta para obter os detalhes do produto com base no ID
-    const queryProduto = 'SELECT * FROM produtos WHERE id = ?';
+        var con = conectiondb();
 
-    connection.query(queryProduto, [productId], (errorProduto, resultsProduto) => {
-        if (errorProduto) {
-            console.error('Erro ao buscar detalhes do produto:', errorProduto);
-            res.status(500).send('Erro ao buscar detalhes do produto. Tente novamente mais tarde.');
+        var query = `SELECT p.id, p.nome_produto, p.descricao, p.preco, p.quantidade, p.foto, e.nome_empresa
+                     FROM produtos p
+                     INNER JOIN empresa_produtos ep ON p.id = ep.produto_id
+                     INNER JOIN empresas e ON e.id = ep.empresa_id
+                     WHERE e.localidade = ? AND p.disponibilidade = 'disponível'
+                     ORDER BY RAND()
+                     LIMIT 10`;
+
+        con.query(query, [req.session.cidade], function (err, results) {
+            if (err) {
+                console.error('Erro ao buscar produtos:', err);
+                res.render('views/home', { produtos: [] });
+                return;
+            }
+
+            console.log('Produtos recuperados com sucesso:', results);
+            res.render('views/home', { produtos: results }); // Passando os resultados para a página home.ejs
+        });
+    } else {
+        res.redirect('/');
+    }
+});
+
+
+
+
+// Método post do register para usuários
+app.post('/register', function (req, res) {
+    var username = req.body.nome;
+    var pass = req.body.pwd;
+    var email = req.body.email;
+    var idade = req.body.idade;
+    var cidade = req.body.cidade;
+    var estado = req.body.estado;
+
+    var con = conectiondb();
+
+    // Verificação se o email já existe na tabela 'users'
+    var queryUser = 'SELECT * FROM users WHERE email LIKE ?';
+
+    con.query(queryUser, [email], function (err, resultsUser) {
+        if (resultsUser.length > 0) {
+            var message = 'E-mail já cadastrado como usuário';
+            res.render('views/registro', { message: message });
         } else {
-            const nomeProduto = resultsProduto[0].nome_produto;
+            // Se o email não existe na tabela 'users', então verifica na tabela 'empresas'
+            var queryCompany = 'SELECT * FROM empresas WHERE email LIKE ?';
 
-            // Consulta para obter as empresas com produtos semelhantes ao produto clicado
-            const queryEmpresas = `SELECT p.nome_produto, p.preco, p.descricao, p.disponibilidade, e.nome_empresa
-                                   FROM empresas e
-                                   INNER JOIN empresa_produtos ep ON e.id = ep.empresa_id
-                                   INNER JOIN produtos p ON ep.produto_id = p.id
-                                   WHERE p.nome_produto LIKE ? AND p.id != ?`;
-
-            connection.query(queryEmpresas, [`%${nomeProduto}%`, productId], (errorEmpresas, resultsEmpresas) => {
-                if (errorEmpresas) {
-                    console.error('Erro ao buscar empresas com produtos semelhantes:', errorEmpresas);
-                    res.status(500).send('Erro ao buscar empresas com produtos semelhantes. Tente novamente mais tarde.');
+            con.query(queryCompany, [email], function (err, resultsCompany) {
+                if (resultsCompany.length > 0) {
+                    var message = 'E-mail já cadastrado como empresa';
+                    res.render('views/registro', { message: message });
                 } else {
-                    // Renderizar a página de produtos com os detalhes do produto e empresas relacionadas
-                    res.render('views/produtos', { detalhesProduto: resultsProduto, empresasRelacionadas: resultsEmpresas });
+                    // Se o email não existe em nenhuma das tabelas, realiza o cadastro na tabela 'users'
+                    var query = 'INSERT INTO users (username, email, idade, cidade, estado, pass, tipo_conta) VALUES (?, ?, ?, ?, ?, ?, ?)';
+
+                    con.query(query, [username, email, idade, cidade, estado, pass, 'user'], function (err, results) {
+                        if (err) {
+                            throw err;
+                        } else {
+                            console.log("Usuário adicionado com email " + email);
+                            var message = "ok";
+                            res.render('views/registro', { message: message });
+                        }
+                    });
                 }
             });
         }
@@ -381,7 +418,7 @@ app.get('/produtos/:id', function (req, res) {
 
 
 
+
+
 // Executa o servidor
 app.listen(8081, () => console.log(`App listening on port 8081!`));
-
-
