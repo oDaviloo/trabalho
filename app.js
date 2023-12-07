@@ -385,6 +385,9 @@ app.get('/views/home', function (req, res) {
     }
 });
 
+
+
+// Rota para a página produtos
 // Rota para a página produtos
 // Rota para a página produtos
 app.get('/produtos/:id', function(req, res) {
@@ -414,20 +417,37 @@ app.get('/produtos/:id', function(req, res) {
                     FROM produtos p
                     INNER JOIN empresa_produtos ep ON p.id = ep.produto_id
                     INNER JOIN empresas e ON e.id = ep.empresa_id
-                    WHERE p.id <> ? -- Para garantir que não seja o mesmo produto
-                    AND SUBSTRING_INDEX(p.nome_produto, ' ', 1) = ?
+                    WHERE SUBSTRING_INDEX(p.nome_produto, ' ', 1) = ?
                     AND e.localidade = ?`;
 
-                connection.query(queryProdutosSemelhantes, [produtoId, primeiraPalavra, cidadeDoUsuario], (error, results) => {
+                connection.query(queryProdutosSemelhantes, [primeiraPalavra, cidadeDoUsuario], (error, results) => {
                     if (error) {
                         console.error('Erro ao buscar produtos semelhantes:', error);
                         res.status(500).send('Erro ao buscar produtos semelhantes. Tente novamente mais tarde.');
                     } else {
                         const produtosSemelhantes = results; // Resultados da busca de produtos semelhantes
 
-                        console.log('Dados enviados para o template:', produtosSemelhantes);
+                        // Consulta para buscar informações do produto atual
+                        const queryProdutoAtual = `
+                            SELECT p.nome_produto, p.preco, p.descricao, e.nome_empresa 
+                            FROM produtos p
+                            INNER JOIN empresa_produtos ep ON p.id = ep.produto_id
+                            INNER JOIN empresas e ON e.id = ep.empresa_id
+                            WHERE p.id = ?
+                            AND e.localidade = ?`;
 
-                        res.render('views/produtos', { produtosSemelhantes });
+                        connection.query(queryProdutoAtual, [produtoId, cidadeDoUsuario], (error, results) => {
+                            if (error) {
+                                console.error('Erro ao buscar informações do produto atual:', error);
+                                res.status(500).send('Erro ao buscar informações do produto atual. Tente novamente mais tarde.');
+                            } else {
+                                const produtoAtual = results[0]; // Informações do produto atual
+
+                                console.log('Dados enviados para o template:', produtosSemelhantes, produtoAtual);
+
+                                res.render('views/produtos', { produtosSemelhantes, produtoAtual });
+                            }
+                        });
                     }
                 });
             }
