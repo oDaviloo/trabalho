@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Empresas</title>
+
+
+
+    <!-- Importação Bootstrap-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+        integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
+        crossorigin="anonymous"></script>
+
+
+
+    <!-- Importação biblioteca de ícones -->
+    <link rel="stylesheet" href="../css/font-awesome/css/font-awesome.min.css">
+</head>
+
+
+<body>
+
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Cadastro de Empresas</h2>
+        <form method="POST" action="/cadastrar_empresas" class="form_cadastro" novalidate>
+            <div class="row">
+                <!-- Coluna esquerda -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="nomeEmpresa">Nome da Empresa</label>
+                        <input type="text" class="form-control" id="nomeEmpresa" name="nomeEmpresa" required>
+                        <div class="invalid-feedback">Por favor, insira um nome.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                        <div class="invalid-feedback">Por favor, insira um email válido.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="numeroContato">Número para Contato</label>
+                        <input type="text" class="form-control" id="numeroContato" name="numeroContato" required>
+                        <div class="invalid-feedback">Por favor, insira um número para contato.</div>
+                    </div>
+
+                    <br>
+
+                    <div class="form-group">
+                        <label for="senha">Senha</label>
+                        <input type="password" class="form-control" id="senha" name="senha" required>
+                        <div class="invalid-feedback">Por favor, insira uma senha.</div>
+                    </div>
+                </div>
+
+                <!-- Coluna direita -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="setor">Setor</label>
+                        <select class="form-control" id="setor" name="setor" required>
+                            <option value="">Selecione o Setor</option>
+                            <option value="Eletrônicos">Eletrônicos</option>
+                            <option value="Supermercado">Supermercado</option>
+                            <option value="Vestuário e Acessórios">Vestuário e Acessórios</option>
+                            <option value="Móveis e Decoração para Casa">Móveis e Decoração para Casa</option>
+                            <option value="Alimentos e Bebidas">Alimentos e Bebidas</option>
+                            <option value="Produtos de Beleza e Cuidados Pessoais">Produtos de Beleza e Cuidados Pessoais
+                            </option>
+                            <option value="Artigos Esportivos e de Fitness">Artigos Esportivos e de Fitness</option>
+                            <option value="Brinquedos e Jogos">Brinquedos e Jogos</option>
+                            <option value="Equipamentos e Ferramentas para Casa e Jardim">Equipamentos e Ferramentas para Casa e
+                                Jardim</option>
+                            <option value="Instrumentos Musicais">Instrumentos Musicais</option>
+                            <option value="Livros e Material de Papelaria">Livros e Material de Papelaria</option>
+                            <option value="Utensílios Domésticos e Cozinha">Utensílios Domésticos e Cozinha</option>
+                            <option value="Produtos para Animais de Estimação">Produtos para Animais de Estimação</option>
+                            <option value="Joias e Acessórios">Joias e Acessórios</option>
+                            <option value="Produtos de Saúde e Bem-Estar">Produtos de Saúde e Bem-Estar</option>
+                            <option value="Produtos Automotivos">Produtos Automotivos</option>
+                            <option value="Equipamentos de Escritório">Equipamentos de Escritório</option>
+                            <option value="Produtos de Limpeza e Higiene">Produtos de Limpeza e Higiene</option>
+                            <option value="Artigos de Artesanato e Arte">Artigos de Artesanato e Arte</option>
+                            <option value="Equipamentos para Bebês e Crianças">Equipamentos para Bebês e Crianças</option>
+                            <option value="Ferramentas e Materiais de Construção">Ferramentas e Materiais de Construção</option>
+
+
+
+                        </select>
+                        <div class="invalid-feedback">Por favor, selecione um setor.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cnpj">CNPJ</label>
+                        <input type="text" class="form-control" id="cnpj" name="cnpj" required>
+                        <div class="invalid-feedback">Por favor, insira um CNPJ válido.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="cep" class="form-label">CEP</label>
+                        <input type="text" class="form-control" id="cep" name="cep" maxlength="9" required>
+                        <small id="cepHelp" class="form-text text-muted">Digite um CEP válido (ex: 60130240).</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="numeroEndereco">Número do Endereço</label>
+                        <input type="text" class="form-control" id="numeroEndereco" name="numeroEndereco" required>
+                        <div class="invalid-feedback">Por favor, insira o número do endereço.</div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary d-flex mx-auto justify-content-center">Cadastrar</button>
+        </form>
+
+        <!-- Importação dos scripts -->
+        <script src="/scripts.js"></script>
+    </div>
+
+   <script>
+            // Adicionando máscara para número de telefone (formato: (99) 99999-9999)
+            var numeroContatoInput = document.getElementById('numeroContato');
+            numeroContatoInput.addEventListener('input', function (event) {
+                event.target.value = event.target.value.replace(/\D/g, '')
+                    .replace(/^(\d{2})(\d)/g, '($1) $2')
+                    .replace(/(\d{5})(\d{4}).*/, '$1-$2');
+            });
+        </script>
+
+        <script>
+            // Permitindo apenas números no campo de número do endereço
+            var numeroEnderecoInput = document.getElementById('numeroEndereco');
+            numeroEnderecoInput.addEventListener('keypress', function (event) {
+                var key = event.keyCode;
+                if (key < 48 || key > 57) {
+                    event.preventDefault();
+                }
+            });
+        </script>
+
+<script>
+    // Função para validar todos os campos antes de enviar o formulário
+    document.querySelector('.form_cadastro').addEventListener('submit', function (event) {
+        const form = this;
+        let valid = true;
+
+        form.querySelectorAll('input[required], select[required]').forEach(input => {
+            if (!input.value.trim()) {
+                input.classList.add('is-invalid');
+                valid = false;
+            } else {
+                input.classList.remove('is-invalid');
+            }
+        });
+
+        if (!valid) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        form.classList.add('was-validated');
+    });
+
+    // Evento para remover a classe 'is-invalid' quando os campos obrigatórios forem preenchidos
+    document.querySelectorAll('input[required], select[required]').forEach(input => {
+        input.addEventListener('input', function () {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+
+
+    
+</script>
+
+
+
+
+
+<script>
+    // Função para formatar o CEP
+    function formatarCEP(cep) {
+        return cep.replace(/\D/g, '') // Remove caracteres não numéricos
+            .replace(/^(\d{5})(\d{3})$/, '$1-$2'); // Adiciona a formatação
+    }
+
+    // Função para validar o CEP
+    function validarCEP(cep) {
+        return /^[0-9]{5}-[0-9]{3}$/.test(cep); // Expressão regular para validar o formato XXXXX-XXX
+    }
+
+    document.getElementById('cep').addEventListener('input', function () {
+        const inputCEP = this.value;
+        const formattedCEP = formatarCEP(inputCEP);
+
+        // Define o valor formatado no campo de CEP
+        this.value = formattedCEP;
+
+        // Verifica se o CEP é válido e mostra uma mensagem para o usuário
+        const cepValido = validarCEP(inputCEP);
+        const cepHelp = document.getElementById('cepHelp');
+        cepHelp.textContent = cepValido ? 'CEP válido' : 'CEP inválido';
+        cepHelp.style.color = cepValido ? 'green' : 'red';
+    });
+</script>
+
+
+
+
+
+
+<script>
+    // Função para validar o formato do CNPJ
+    function validateCNPJ(cnpj) {
+        cnpj = cnpj.replace(/\D/g, ''); // Remove caracteres não numéricos
+        if (cnpj.length !== 14) return false; // Verifica se tem 14 dígitos
+        var soma = 0;
+        var tamanho = cnpj.length - 2;
+        var numeros = cnpj.substring(0, tamanho);
+        var digitos = cnpj.substring(tamanho);
+        var pos = tamanho - 7;
+
+        for (var i = tamanho; i >= 1; i--) {
+            soma += numeros.charAt(tamanho - i) * pos--;
+            if (pos < 2) pos = 9;
+        }
+
+        var resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+        if (resultado != digitos.charAt(0)) return false;
+
+        tamanho = tamanho + 1;
+        soma = 0;
+        numeros = cnpj.substring(0, tamanho);
+        pos = tamanho - 7;
+
+        for (var j = tamanho; j >= 1; j--) {
+            soma += numeros.charAt(tamanho - j) * pos--;
+            if (pos < 2) pos = 9;
+        }
+
+        resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+        if (resultado != digitos.charAt(1)) return false;
+
+        return true;
+    }
+
+    // Função para formatar o CNPJ (adiciona pontos, barra e traço)
+    function formatCNPJ(cnpj) {
+        cnpj = cnpj.replace(/\D/g, ''); // Remove caracteres não numéricos
+        cnpj = cnpj.slice(0, 14); // Limita o CNPJ a 14 dígitos
+        cnpj = cnpj.replace(/^(\d{2})(\d)/, '$1.$2'); // Adiciona o primeiro ponto
+        cnpj = cnpj.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3'); // Adiciona o segundo ponto
+        cnpj = cnpj.replace(/\.(\d{3})(\d)/, '.$1/$2'); // Adiciona a barra
+        cnpj = cnpj.replace(/(\d{4})(\d)/, '$1-$2'); // Adiciona o traço
+
+        return cnpj;
+    }
+
+    // Evento keypress para permitir apenas números no campo CNPJ e limitar a quantidade de caracteres
+    document.getElementById('cnpj').addEventListener('keypress', function (event) {
+        if (event.which != 8 && event.which != 0 && (event.which < 48 || event.which > 57) || this.value.length >= 18) {
+            event.preventDefault();
+        }
+    });
+
+    // Evento input para formatar o CNPJ enquanto é digitado e limitar a quantidade de caracteres
+    document.getElementById('cnpj').addEventListener('input', function () {
+        var cnpjInput = this.value;
+        this.value = formatCNPJ(cnpjInput);
+    });
+
+    // Evento blur para validar o CNPJ quando o campo perde o foco
+    document.getElementById('cnpj').addEventListener('blur', function () {
+        var cnpjInput = this.value;
+        var isValid = validateCNPJ(cnpjInput);
+
+        if (!isValid) {
+            this.setCustomValidity('CNPJ inválido. Por favor, insira um CNPJ válido.');
+            this.classList.add('is-invalid');
+        } else {
+            this.setCustomValidity('');
+            this.classList.remove('is-invalid');
+        }
+    });
+</script>
+
+
+</body>
+
+</html>
+
+

@@ -1,0 +1,208 @@
+
+ <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro de Produtos</title>
+    <!-- Bootstrap CSS CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <!-- Logo do site à esquerda -->
+        <a class="navbar-brand" href="#">
+            <img src="../images/perfeitinha2.svg" width="200" height="50" class="d-inline-block align-top" alt="Logo">
+        </a>
+        
+        <!-- Nome da empresa centralizado -->
+        <div class="mx-auto">
+            <a class="navbar-brand" href="#"><%= nomeEmpresaLogada %></a> <!-- Exibição do nome da empresa logada -->
+        </div>
+        
+        <!-- Links da Navbar -->
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/">Sair</a> 
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/perfil_empresa">Perfil</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/gerenciar_produtos/">Gerenciar Produtos</a>
+            </li>
+        </ul>
+    </nav>
+
+<div id="successMessage" class="alert alert-success" role="alert">
+    <% if (successMessage) { %>
+        <%= successMessage %>
+    <% } %>
+</div>
+
+<div class="container mt-4">
+    <h1>Cadastro de Produtos</h1>
+    <form id="productForm" enctype="multipart/form-data">
+
+        <div class="form-group">
+            <label for="nomeProduto">Nome do Produto:</label>
+            <input type="text" class="form-control" id="nome_produto" name="nome_produto" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="descricao">Descrição:</label>
+            <textarea class="form-control" id="descricao" name="descricao" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="preco">Preço:</label>
+            <input type="text" class="form-control" id="preco" name="preco" required>
+        </div>
+        <div class="form-group">
+            <label for="quantidade">Quantidade:</label>
+            <input type="number" class="form-control" id="quantidade" name="quantidade" required>
+        </div>
+
+        <div class="form-group">
+            <label for="foto">Foto:</label>
+            <input type="file" class="form-control-file" id="fotoInput" name="foto">
+        </div>
+
+        <div class="form-group">
+            <label for="disponibilidade">Disponibilidade:</label>
+            <select class="form-control" id="disponibilidade" name="disponibilidade">
+                <option value="disponível">Disponível</option>
+                <option value="indisponível">Indisponível</option>
+            </select>
+        </div>
+
+        <!-- Adicione um campo oculto para armazenar o ID da empresa -->
+        <input type="hidden" id="empresa_id" name="empresa_id" value="<%= empresa_id %>">
+
+        <button type="submit" class="btn btn-primary">Cadastrar Produto</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('productForm');
+        
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            const fileInput = document.getElementById('fotoInput');
+            const file = fileInput.files[0];
+
+            // Verificar se um arquivo foi selecionado
+            if (file) {
+                formData.set('foto', file); // Adicionando a imagem aos dados do formulário
+
+                // Realizar a requisição POST para o backend
+                fetch('/cadastrar_produto', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Requisição bem-sucedida:', response);
+                        // Redirecionar para a página cadastro_produtos após o sucesso
+        window.location.href = '/cadastro_produtos'; // Substitua com a URL correta da sua página
+
+                    } else {
+                        console.error('Erro ao realizar a requisição:', response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao realizar a requisição:', error);
+                });
+            } else {
+                // Caso nenhum arquivo seja selecionado
+                console.error('Nenhum arquivo selecionado.');
+            }
+        });
+// Lidar com o evento de soltar (drop) uma imagem no campo de upload
+fotoInput.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                fotoInput.files = e.dataTransfer.files;
+            }
+        });
+
+        // Evitar o comportamento padrão ao soltar uma imagem sobre a página
+        document.body.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        document.body.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    });
+    
+</script>
+
+<!-- Script para esconder mensagem de sucesso após 5 segundos -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('productForm');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Simulação de envio bem-sucedido para exibir a mensagem de sucesso
+            const successMessage = document.getElementById('successMessage');
+            if (successMessage) {
+                successMessage.style.display = 'block'; // Exibir a mensagem de sucesso
+            }
+        });
+
+// Outros event listeners e funcionalidades do seu script
+})
+
+//Script para esconder mensagem de sucesso após 5 segundos 
+<script>
+    setTimeout(function() {
+        var successMessage = document.getElementById('successMessage');
+        if (successMessage) {
+            successMessage.style.display = 'none';
+        }
+    }, 5000); // 5000 milissegundos = 5 segundos
+
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const precoInput = document.getElementById('preco');
+
+       // Função para formatar o valor em formato de moeda (real)
+       function formatarMoeda(valor) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+        }
+
+        // Função para validar e formatar o valor do campo de preço
+        precoInput.addEventListener('input', () => {
+            // Remover caracteres não numéricos do valor do input
+            const valorLimpo = precoInput.value.replace(/\D/g, '');
+
+            // Se o campo estiver vazio ou não contiver apenas números
+            if (valorLimpo === '' || /[^0-9]/.test(valorLimpo)) {
+                precoInput.setCustomValidity('Formato de preço inválido.');
+                // Limpar o campo de preço para evitar formatação errada
+                precoInput.value = '';
+            } else {
+                // Formatar o valor como moeda (real)
+                precoInput.value = formatarMoeda(valorLimpo / 100); // Divida por 100 para tratar centavos
+                precoInput.setCustomValidity('');
+            }
+        });
+    });
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+

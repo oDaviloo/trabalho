@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil da Empresa</title>
+  
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+  <style>
+    .navbar-custom {
+        background-color: #FFA500 !important;
+        /* Laranja claro */
+    }
+</style>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark navbar-custom">
+    
+    <a class="navbar-brand" href="#">
+      <img src="../images/perfeitinha2.svg" width="200" height="50" class="d-inline-block align-top" alt="Logo">
+    </a>
+    
+    
+    <div class="mx-auto">
+      <a class="navbar-brand" href="#"><%= profileData.nome_empresa %></a>
+    </div>
+    
+    <!-- Links da Navbar -->
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" href="/perfil_empresa">Perfil</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/gerenciar_produtos">Gerenciar Produtos</a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Seção de Informações -->
+  <div class="container mt-4">
+    <h2>Informações da Empresa</h2>
+    <div class="row">
+      <div class="col-md-6">
+        <!-- Exibir detalhes do perfil da empresa -->
+        <p><strong>Nome:</strong> <%= profileData.nome_empresa %></p>
+        <p><strong>CNPJ:</strong> <%= profileData.cnpj %></p>
+        <p><strong>Email:</strong> <%= profileData.email %></p>
+        <p><strong>Setor:</strong> <%= profileData.setor %></p>
+       
+        <p><strong>Número de Telefone:</strong> <%= profileData.numero_contato %></p>
+        
+        
+      </div>
+      <div class="col-md-6">
+        <!-- Informações de endereço obtidas por meio da API de CEP -->
+        <p><strong>CEP:</strong> <%= cep %></p>
+        <p><strong>Logradouro:</strong> <%= logradouro %></p>
+        <p><strong>Bairro:</strong> <%= bairro %></p>
+        <p><strong>Localidade:</strong> <%= localidade %></p>
+        <p><strong>Número do Endereço:</strong> <%= profileData.numero_endereco %></p>
+        <!-- Adicione outros campos de endereço -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulário de Edição -->
+ <div class="container mt-4">
+    <h2>Alterar Informações</h2>
+  <form id="editForm" action="/atualizar_empresa" method="POST">
+    <!-- Campos editáveis pré-preenchidos -->
+    <div class="form-group">
+      <label for="senha">Senha</label>
+      <input type="password" class="form-control" id="senha" name="senha" value="<%= profileData.senha %>">
+    </div>
+    <div class="form-group">
+      <label for="numeroContato">Número de Telefone</label>
+      <input type="text" class="form-control" id="numeroContato" name="numeroContato" value="<%= profileData.numero_contato %>">
+    </div>
+    <div class="form-group">
+      <label for="numeroEndereco">Número de Endereço</label>
+      <input type="text" class="form-control" id="numeroEndereco" name="numeroEndereco" value="<%= profileData.numero_endereco %>">
+    </div>
+    <div class="form-group">
+      <label for="cep">CEP</label>
+      <input type="text" class="form-control" id="cep" name="cep" value="<%= cep %>">
+    </div>
+
+    <form id="editForm" action="/atualizar_empresa" method="POST">
+        <!-- Campos editáveis pré-preenchidos -->
+        <div class="form-group">
+          <label for="nomeEmpresa">Nome da Empresa</label>
+          <input type="text" class="form-control" id="nomeEmpresa" name="nomeEmpresa" value="<%= profileData.nome_empresa %>">
+        </div>
+        <div class="form-group">
+          <label for="cnpj">CNPJ</label>
+          <input type="text" class="form-control" id="cnpj" name="cnpj" value="<%= profileData.cnpj %>">
+        </div>
+        <div class="form-group">
+          <label for="setor">Setor</label>
+          <select class="form-control" id="setor" name="setor">
+            <option value="Eletrônicos" <%= profileData.setor === 'Eletrônicos' ? 'selected' : '' %>>Eletrônicos</option>
+            <option value="Supermercado" <%= profileData.setor === 'Supermercado' ? 'selected' : '' %>>Supermercado</option>
+    <option value="Vestuário e Acessórios" <%= profileData.setor === 'Vestuário e Acessórios' ? 'selected' : '' %>>Vestuário e Acessórios</option>
+    <option value="Móveis e Decoração para Casa" <%= profileData.setor === 'Móveis e Decoração para Casa' ? 'selected' : '' %>>Móveis e Decoração para Casa</option>
+    <option value="Alimentos e Bebidas" <%= profileData.setor === 'Alimentos e Bebidas' ? 'selected' : '' %>>Alimentos e Bebidas</option>
+    <option value="Produtos de Beleza e Cuidados Pessoais" <%= profileData.setor === 'Produtos de Beleza e Cuidados Pessoais' ? 'selected' : '' %>>Produtos de Beleza e Cuidados Pessoais</option>
+    <option value="Artigos Esportivos e de Fitness" <%= profileData.setor === 'Artigos Esportivos e de Fitness' ? 'selected' : '' %>>Artigos Esportivos e de Fitness</option>
+    <option value="Brinquedos e Jogos" <%= profileData.setor === 'Brinquedos e Jogos' ? 'selected' : '' %>>Brinquedos e Jogos</option>
+    <option value="Equipamentos e Ferramentas para Casa e Jardim" <%= profileData.setor === 'Equipamentos e Ferramentas para Casa e Jardim' ? 'selected' : '' %>>Equipamentos e Ferramentas para Casa e Jardim</option>
+    <option value="Instrumentos Musicais" <%= profileData.setor === 'Instrumentos Musicais' ? 'selected' : '' %>>Instrumentos Musicais</option>
+    <option value="Livros e Material de Papelaria" <%= profileData.setor === 'Livros e Material de Papelaria' ? 'selected' : '' %>>Livros e Material de Papelaria</option>
+    <option value="Utensílios Domésticos e Cozinha" <%= profileData.setor === 'Utensílios Domésticos e Cozinha' ? 'selected' : '' %>>Utensílios Domésticos e Cozinha</option>
+    <option value="Produtos para Animais de Estimação" <%= profileData.setor === 'Produtos para Animais de Estimação' ? 'selected' : '' %>>Produtos para Animais de Estimação</option>
+    <option value="Joias e Acessórios" <%= profileData.setor === 'Joias e Acessórios' ? 'selected' : '' %>>Joias e Acessórios</option>
+    <option value="Produtos de Saúde e Bem-Estar" <%= profileData.setor === 'Produtos de Saúde e Bem-Estar' ? 'selected' : '' %>>Produtos de Saúde e Bem-Estar</option>
+    <option value="Produtos Automotivos" <%= profileData.setor === 'Produtos Automotivos' ? 'selected' : '' %>>Produtos Automotivos</option>
+    <option value="Equipamentos de Escritório" <%= profileData.setor === 'Equipamentos de Escritório' ? 'selected' : '' %>>Equipamentos de Escritório</option>
+    <option value="Produtos de Limpeza e Higiene" <%= profileData.setor === 'Produtos de Limpeza e Higiene' ? 'selected' : '' %>>Produtos de Limpeza e Higiene</option>
+    <option value="Artigos de Artesanato e Arte" <%= profileData.setor === 'Artigos de Artesanato e Arte' ? 'selected' : '' %>>Artigos de Artesanato e Arte</option>
+    <option value="Equipamentos para Bebês e Crianças" <%= profileData.setor === 'Equipamentos para Bebês e Crianças' ? 'selected' : '' %>>Equipamentos para Bebês e Crianças</option>
+    <option value="Ferramentas e Materiais de Construção" <%= profileData.setor === 'Ferramentas e Materiais de Construção' ? 'selected' : '' %>>Ferramentas e Materiais de Construção</option>
+          </select>
+        </div>
+
+    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+  </form>
+
+</div>
+  <!-- Botão "Deletar Perfil" e Modal - mantido conforme anteriormente -->
+</div>
+
+  <!-- Botão "Deletar Perfil" -->
+  <div class="container mt-4">
+    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">Deletar Perfil</button>
+  </div>
+
+  <!-- Modal de Confirmação de Exclusão -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Confirmação de Exclusão</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          Tem certeza de que deseja excluir seu perfil? Esta ação é irreversível.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="confirmDelete">Confirmar Exclusão</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Adicione os scripts do Bootstrap e do jQuery -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <script>
+    // Adicione um evento de clique ao botão de confirmação de exclusão
+    document.getElementById('confirmDelete').addEventListener('click', function() {
+      // Aqui você pode fazer uma requisição AJAX para a rota que lida com a exclusão do perfil da empresa
+      // Por exemplo:
+      fetch('/excluir_empresa', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ /* Se houverem dados adicionais para enviar junto com a requisição */ })
+      })
+      .then(response => {
+        if (response.ok) {
+          // Se a exclusão for bem-sucedida, redirecione para a página inicial ou faça qualquer ação necessária
+          window.location.href = '/';
+        } else {
+          // Se houver algum problema com a exclusão, exiba uma mensagem de erro ou realize alguma outra ação
+          console.error('Erro ao excluir perfil da empresa');
+        }
+      })
+      .catch(error => {
+        console.error('Erro ao enviar requisição:', error);
+      });
+    });
+  </script>
+
+  <script>
+    // Adicionando máscara para número de telefone (formato: (99) 99999-9999)
+    var numeroContatoInput = document.getElementById('numeroContato');
+    numeroContatoInput.addEventListener('input', function (event) {
+      event.target.value = event.target.value.replace(/\D/g, '')
+        .replace(/^(\d{2})(\d)/g, '($1) $2')
+        .replace(/(\d{5})(\d{4}).*/, '$1-$2');
+    });
+
+    // Permitindo apenas números no campo de número do endereço
+    var numeroEnderecoInput = document.getElementById('numeroEndereco');
+    numeroEnderecoInput.addEventListener('keypress', function (event) {
+      var key = event.keyCode;
+      if (key < 48 || key > 57) {
+        event.preventDefault();
+      }
+    });
+
+    // Função para formatar o CEP
+    function formatarCEP(cep) {
+      return cep.replace(/\D/g, '') // Remove caracteres não numéricos
+        .replace(/^(\d{5})(\d{3})$/, '$1-$2'); // Adiciona a formatação
+    }
+
+    // Função para validar o CEP
+    function validarCEP(cep) {
+      return /^[0-9]{5}-[0-9]{3}$/.test(cep); // Expressão regular para validar o formato XXXXX-XXX
+    }
+
+    document.getElementById('cep').addEventListener('input', function () {
+    const inputCEP = this.value;
+    const formattedCEP = formatarCEP(inputCEP);
+
+    // Limitando a entrada a 8 dígitos (XXXXXXXX)
+    const cepDigits = inputCEP.replace(/\D/g, '');
+    const cepLimited = cepDigits.slice(0, 8);
+    this.value = formatarCEP(cepLimited);
+
+    // Verifica se o CEP é válido e mostra uma mensagem para o usuário
+    const cepValido = validarCEP(inputCEP);
+    const cepHelp = document.getElementById('cepHelp');
+    cepHelp.textContent = cepValido ? 'CEP válido' : 'CEP inválido';
+    cepHelp.style.color = cepValido ? 'green' : 'red';
+    });
+  </script>
+<!-- ... (código anterior) ... -->
+
+<!-- Adicione este script abaixo do código HTML existente -->
+<script>
+    // Função para formatar o CNPJ (adiciona pontos, barra e traço)
+    function formatCNPJ(cnpj) {
+        cnpj = cnpj.replace(/\D/g, ''); // Remove caracteres não numéricos
+        cnpj = cnpj.slice(0, 14); // Limita o CNPJ a 14 dígitos
+        cnpj = cnpj.replace(/^(\d{2})(\d)/, '$1.$2'); // Adiciona o primeiro ponto
+        cnpj = cnpj.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3'); // Adiciona o segundo ponto
+        cnpj = cnpj.replace(/\.(\d{3})(\d)/, '.$1/$2'); // Adiciona a barra
+        cnpj = cnpj.replace(/(\d{4})(\d)/, '$1-$2'); // Adiciona o traço
+
+        return cnpj;
+    }
+
+    // Evento keypress para permitir apenas números no campo CNPJ e limitar a quantidade de caracteres
+    document.getElementById('cnpj').addEventListener('keypress', function (event) {
+        if (event.which != 8 && event.which != 0 && (event.which < 48 || event.which > 57) || this.value.length >= 18) {
+            event.preventDefault();
+        }
+    });
+
+    // Evento input para formatar o CNPJ enquanto é digitado e limitar a quantidade de caracteres
+    document.getElementById('cnpj').addEventListener('input', function () {
+        var cnpjInput = this.value;
+        this.value = formatCNPJ(cnpjInput);
+    });
+</script>
+
+
+
+</body>
+</html>

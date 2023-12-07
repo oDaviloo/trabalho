@@ -1,0 +1,176 @@
+<!-- views/gerenciar_produtos.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerenciar Produtos</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <!-- Logo do site à esquerda -->
+    <a class="navbar-brand" href="#">
+        <img src="../images/perfeitinha2.svg" width="200" height="50" class="d-inline-block align-top" alt="Logo">
+    </a>
+    
+    <!-- Nome da empresa centralizado -->
+    <div class="mx-auto">
+      <a class="navbar-brand" href="#"><%= nomeEmpresaLogada %></a> <!-- Exibição do nome da empresa logada -->
+  </div>
+    
+    <!-- Links da Navbar -->
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a class="nav-link" href="/perfil_empresa">Perfil</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/cadastro_produtos/">Cadastrar produtos</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/Logout/">Sair</a>
+        </li>
+    </ul>
+</nav>
+
+
+
+<div class="container mt-5">
+    <h2>Produtos Cadastrados</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>Preço</th>
+                <th>Quantidade</th>
+                <th>Disponibilidade</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% products.forEach(function(product) { %>
+                <tr>
+                    <td><%= product.id %></td>
+                    <td><%= product.nome_produto %></td>
+                    <td><%= product.descricao %></td>
+                    <td><%= product.preco %></td>
+                    <td><%= product.quantidade %></td>
+                    <td><%= product.disponibilidade %></td>
+                    <td>
+                        <!-- Botões de Editar e Excluir -->
+                        <a href="#" class="btn btn-primary btn-editar" data-produto-id="<%= product.id %>"
+                            data-nome-produto="<%= product.nome_produto %>"
+                            data-descricao="<%= product.descricao %>"
+                            data-preco="<%= product.preco %>"
+                            data-quantidade="<%= product.quantidade %>"
+                            data-disponibilidade="<%= product.disponibilidade %>">Editar</a>
+                        <form action="/excluir_produto" method="POST" style="display: inline;">
+                            <input type="hidden" name="idProduto" value="<%= product.id %>">
+                            <button type="submit" class="btn btn-danger">Excluir</button>
+                        </form>
+                    </td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal para a edição do produto -->
+<div class="modal fade" id="editarProdutoModal" tabindex="-1" role="dialog" aria-labelledby="editarProdutoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarProdutoModalLabel">Editar Produto</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Formulário para editar o produto -->
+                <form id="formEditarProduto" action="/editar_produto" method="POST">
+                    <input type="hidden" id="produtoId" name="produtoId">
+                    <!-- Campo para editar o nome do produto -->
+                    <div class="form-group">
+                        <label for="nomeProduto">Nome do Produto:</label>
+                        <input type="text" class="form-control" id="nomeProduto" name="nome_produto">
+                    </div>
+                    <!-- Campo para editar a descrição -->
+                    <div class="form-group">
+                        <label for="descricao">Descrição:</label>
+                        <textarea class="form-control" id="descricao" name="descricao"></textarea>
+                    </div>
+                    <!-- Campo para editar o preço -->
+                    <div class="form-group">
+                        <label for="preco">Preço:</label>
+                        <input type="text" class="form-control" id="preco" name="preco">
+                    </div>
+                    <!-- Campo para editar a quantidade -->
+                    <div class="form-group">
+                        <label for="quantidade">Quantidade:</label>
+                        <input type="text" class="form-control" id="quantidade" name="quantidade">
+                    </div>
+                    <!-- Campo para editar a disponibilidade -->
+                    <div class="form-group">
+                        <label for="disponibilidade">Disponibilidade:</label>
+                        <select class="form-control" id="disponibilidade" name="disponibilidade">
+                            <option value="Disponível">Disponível</option>
+                            <option value="Indisponível">Indisponível</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+  // Captura o ID do produto e preenche o modal com os dados corretos quando clicado em "Editar"
+  $('.btn-editar').on('click', function() {
+      var produtoId = $(this).data('produto-id');
+      var nomeProduto = $(this).data('nome-produto');
+      var descricao = $(this).data('descricao');
+      var preco = $(this).data('preco');
+      var quantidade = $(this).data('quantidade');
+      var disponibilidade = $(this).data('disponibilidade');
+
+      $('#produtoId').val(produtoId);
+      $('#nomeProduto').val(nomeProduto);
+      $('#descricao').val(descricao);
+      $('#preco').val(preco);
+      $('#quantidade').val(quantidade);
+      $('#disponibilidade').val(disponibilidade);
+
+      // Formatação do campo de preço para moeda
+      var formatter = new Intl.NumberFormat('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+      });
+      $('#preco').val(formatter.format(preco));
+
+      $('#editarProdutoModal').modal('show');
+  });
+
+  // Validação do formulário antes de submeter
+  $('#formEditarProduto').on('submit', function(e) {
+      var nomeProduto = $('#nomeProduto').val();
+      var descricao = $('#descricao').val();
+      var preco = $('#preco').val();
+      var quantidade = $('#quantidade').val();
+      var disponibilidade = $('#disponibilidade').val();
+
+      if (!nomeProduto || !descricao || !preco || !quantidade || !disponibilidade) {
+          e.preventDefault(); // Impede o envio do formulário se algum campo estiver vazio
+          alert('Por favor, preencha todos os campos antes de salvar.');
+      }
+  });
+</script>
+</body>
+</html>
