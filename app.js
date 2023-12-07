@@ -783,6 +783,74 @@ app.post('/excluir_produto', function (req, res) {
     });
 });
 
+// Rota para a página de cadastro de empresas
+app.get('/cadastro_empresas', function (req, res) {
+    // Lógica para renderizar a página de cadastro de empresas
+    res.render('views/cadastro_empresas');
+});
+
+// Método POST para cadastrar empresas
+app.post('/cadastrar_empresas', async (req, res) => {
+    const { nomeEmpresa, cnpj, setor, email, senha, cep, numeroContato, numeroEndereco } = req.body;
+
+   
+
+    try {
+        // Log para capturar o CEP utilizado na requisição
+        console.log('CEP utilizado:', cep);
+
+        const response = await axios.get(`https://viacep.com.br/ws/${cep}/json`);
+        const endereco = response.data;
+
+        // Certifique-se de que a conexão está estabelecida antes de usar connection.query
+        const connection = conectiondb();
+
+        // Verificar se o email já está cadastrado como usuário
+        const queryCheckUser = 'SELECT * FROM users WHERE email LIKE ?';
+        connection.query(queryCheckUser, [email], (err, resultsUser) => {
+            if (resultsUser.length > 0) {
+                // Se o email já estiver cadastrado como usuário, não permitir o cadastro como empresa
+                console.error('E-mail já cadastrado como usuário. Não é possível cadastrar como empresa.');
+                res.status(400).send('E-mail já cadastrado como usuário. Não é possível cadastrar como empresa.');
+            } else {
+                // Se o email não está cadastrado como usuário, prosseguir com o cadastro como empresa
+                connection.query('INSERT INTO empresas SET ?', {
+                    nome_empresa: nomeEmpresa,
+                    cnpj,
+                    setor,
+                    email,
+                    senha,
+                    cep: endereco.cep,
+                    logradouro: endereco.logradouro,
+                    complemento: endereco.complemento,
+                    bairro: endereco.bairro,
+                    localidade: endereco.localidade,
+                    uf: endereco.uf,
+                    ibge: endereco.ibge,
+                    gia: endereco.gia,
+                    ddd: endereco.ddd,
+                    siafi: endereco.siafi,
+                    tipo_conta: 'company', // Definindo o tipo de conta como 'company' para empresas
+                    numero_contato: numeroContato,
+                    numero_endereco: numeroEndereco
+                }, (error, results, fields) => {
+                    if (error) {
+                        console.error('Erro ao cadastrar empresa:', error);
+                        res.status(500).json({ success: false, message: 'Erro ao cadastrar empresa. Por favor, tente novamente.' });
+                    } else {
+                        console.log('Empresa cadastrada com sucesso!');
+                        // Exibindo a mensagem de sucesso sem redirecionamento
+                        res.render('views/login', { message: 'Cadastro realizado com sucesso. Faça login para entrar.' });
+
+                    }
+                });
+            }
+        });
+    } catch (error) {
+        console.error('Erro ao consultar CEP:', error.message);
+        res.status(500).send('Erro ao consultar CEP. Por favor, tente novamente.');
+    }
+});
 
 
 

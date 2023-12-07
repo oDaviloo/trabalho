@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Empresas</title>
+    
 
 
 
@@ -27,8 +27,43 @@
 
 <body>
 
+    <style>
+        .navbar-custom {
+            background-color: #FFA500 !important; /* Laranja claro */
+        }
+    </style>
+    
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="/views/home">
+         
+                <img  src="../images/perfeitinha2.svg"  width="200" height="45" class="d-inline-block align-top"
+                    alt="Logo">
+            </a>
+   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Voltar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/views/login">Login</a>
+                    </li>
+                  
+            
+                    
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Cadastro de Empresas</h2>
+        <h2 class="text-center mb-4">Cadastre a Sua Empresa!</h2>
         <form method="POST" action="/cadastrar_empresas" class="form_cadastro" novalidate>
             <div class="row">
                 <!-- Coluna esquerda -->
@@ -119,8 +154,7 @@
             <button type="submit" class="btn btn-primary d-flex mx-auto justify-content-center">Cadastrar</button>
         </form>
 
-        <!-- Importação dos scripts -->
-        <script src="/scripts.js"></script>
+      
     </div>
 
    <script>
