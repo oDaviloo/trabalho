@@ -376,7 +376,7 @@ app.get('/views/home', function (req, res) {
                 return product;
             });
 
-            console.log('Dados enviados para o template:', produtos);
+            
 
             res.render('views/home', { produtos }); // Enviando 'produtos' para o template
         });
@@ -385,8 +385,62 @@ app.get('/views/home', function (req, res) {
     }
 });
 
+// Rota para a página produtos
+// Rota para a página produtos
+app.get('/produtos/:id', function(req, res) {
+    if (req.session.user) {
+        const produtoId = req.params.id; // ID do produto clicado na página home
+
+        // Obtendo a cidade do usuário logado na sessão
+        const cidadeDoUsuario = req.session.cidade;
+
+        // Consulta para buscar a primeira palavra do produto com o ID específico
+        const queryPrimeiraPalavra = `
+            SELECT SUBSTRING_INDEX(nome_produto, ' ', 1) AS primeira_palavra
+            FROM produtos
+            WHERE id = ?`;
+
+        const connection = conectiondb();
+        connection.query(queryPrimeiraPalavra, produtoId, (error, results) => {
+            if (error) {
+                console.error('Erro ao buscar a primeira palavra do produto:', error);
+                res.status(500).send('Erro ao buscar produtos semelhantes. Tente novamente mais tarde.');
+            } else {
+                const primeiraPalavra = results[0].primeira_palavra; // Primeira palavra do produto
+
+                // Consulta para buscar produtos semelhantes à primeira palavra do produto de ID especificado
+                const queryProdutosSemelhantes = `
+                    SELECT p.nome_produto, p.preco, p.descricao, e.nome_empresa 
+                    FROM produtos p
+                    INNER JOIN empresa_produtos ep ON p.id = ep.produto_id
+                    INNER JOIN empresas e ON e.id = ep.empresa_id
+                    WHERE p.id <> ? -- Para garantir que não seja o mesmo produto
+                    AND SUBSTRING_INDEX(p.nome_produto, ' ', 1) = ?
+                    AND e.localidade = ?`;
+
+                connection.query(queryProdutosSemelhantes, [produtoId, primeiraPalavra, cidadeDoUsuario], (error, results) => {
+                    if (error) {
+                        console.error('Erro ao buscar produtos semelhantes:', error);
+                        res.status(500).send('Erro ao buscar produtos semelhantes. Tente novamente mais tarde.');
+                    } else {
+                        const produtosSemelhantes = results; // Resultados da busca de produtos semelhantes
+
+                        console.log('Dados enviados para o template:', produtosSemelhantes);
+
+                        res.render('views/produtos', { produtosSemelhantes });
+                    }
+                });
+            }
+        });
+    } else {
+        res.redirect('/');
+    }
+});
 
 
+
+
+//produtos FIM
 
 
 

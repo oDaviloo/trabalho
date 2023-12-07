@@ -107,7 +107,7 @@
     <div class="carousel-inner">
       <% produtos.forEach((produto, index) => { %>
         <div class="carousel-item <%= index === 0 ? 'active' : '' %>" data-bs-interval="10000">
-          <a href="/produto/<%= produto.id %>"> <!-- Link temporário -->
+          <a href="/produtos/<%= produto.id %>"> <!-- Link temporário -->
             <img src="data:image/png;base64,<%= produto.foto %>" class="d-block w-100" alt="...">
           </a>
           <div class="carousel-caption d-none d-md-block">
@@ -138,7 +138,7 @@
                 <div class="card mb-3" style="max-width: 540px;">
                     <div class="row g-0">
                         <div class="col-md-4">
-                            <a href="/produto/<%= produtos[i].id %>">
+                            <a href="/produtos/<%= produtos[i].id %>">
                                 <!-- Atualização para utilizar a imagem no formato base64 -->
                                 <img src="data:image/jpeg;base64, <%= produtos[i].foto %>" class="img-fluid rounded-start" alt="<%= produtos[i].nome_produto %>">
                             </a>
