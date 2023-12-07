@@ -1,3 +1,4 @@
+
 const express = require('express');
 const session = require("express-session");
 const path = require('path');
@@ -7,6 +8,11 @@ const bodyParser = require("body-parser");
 const mysql = require("mysql");
 const fs = require('fs'); // Módulo para manipular arquivos
 let connection;
+const multer = require('multer');
+
+// Configuração do Multer para lidar com o upload da imagem
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 app.use(session({
     secret: "ssshhhhh",
@@ -66,6 +72,8 @@ app.get("/views/login", function (req, res) {
 
 //rotas cadastro produto
 
+//rotas cadastro produto
+
 app.get('/cadastro_produtos', function (req, res) {
     if (req.session.user) {
         const successMessage = req.session.successMessage; // Obtendo a mensagem de sucesso da sessão
@@ -97,52 +105,53 @@ app.get('/cadastro_produtos', function (req, res) {
         res.redirect("/"); // Redirecionar se o usuário não estiver logado
     }
 });
-app.post('/cadastrar_produto', async function (req, res) {
-    if (req.session.user) {
-        const { nome_produto, descricao, preco, quantidade, disponibilidade } = req.body;
-        const empresa_id = req.session.empresa_id; // Obtendo o ID da empresa logada
 
-        try {
-            const connection = conectiondb();
+// Rota para cadastrar novo produto
+app.post('/cadastrar_produto', upload.single('foto'), async function (req, res) {
+    // Obtenha outros dados do formulário
+    const { nome_produto, descricao, preco, quantidade, disponibilidade, empresa_id } = req.body;
 
-            // Lendo o arquivo e convertendo para base64
-            const fotoBuffer = req.files.foto.data; // dados do arquivo
+    // Verifica se a imagem foi enviada no corpo da requisição
+    if (!req.file || !req.file.buffer) {
+        return res.status(400).json({ error: 'Imagem não encontrada na requisição.' });
+    }
 
-            const fotoBase64 = fotoBuffer.toString('base64'); // Convertendo para base64
+    const buffer = req.file.buffer; // Obter o buffer da imagem enviada
 
-            // Query para inserir um novo produto na tabela 'produtos'
-            const query = `INSERT INTO produtos (nome_produto, descricao, preco, quantidade, disponibilidade, foto, empresa_id) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-            const queryParams = [nome_produto, descricao, preco, quantidade, disponibilidade, fotoBase64, empresa_id];
+    try {
+        // Realiza sua conexão com o banco de dados aqui
+        const connection = conectiondb();
 
-            connection.query(query, queryParams, (error, results) => {
-                if (error) {
-                    console.error('Erro ao cadastrar o produto:', error);
-                    res.status(500).send('Erro ao cadastrar o produto. Tente novamente mais tarde.');
-                } else {
-                    const productId = results.insertId;
+        // Query para inserir um novo produto na tabela 'produtos' com a foto em formato BLOB
+        const insertProductQuery = `INSERT INTO produtos (nome_produto, descricao, preco, quantidade, disponibilidade, foto, empresa_id) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+        const insertProductParams = [nome_produto, descricao, preco, quantidade, disponibilidade, buffer, empresa_id];
 
-                    // Inserir um novo registro na tabela 'empresa_produtos' associando o produto à empresa correspondente
-                    const insertEmpresaProdutoQuery = 'INSERT INTO empresa_produtos (empresa_id, produto_id) VALUES (?, ?)';
-                    const insertEmpresaProdutoParams = [empresa_id, productId];
+        connection.query(insertProductQuery, insertProductParams, (error, results) => {
+            if (error) {
+                console.error('Erro ao cadastrar o produto:', error);
+                res.status(500).send('Erro ao cadastrar o produto. Tente novamente mais tarde.');
+            } else {
+                const productId = results.insertId; // Obtendo o ID do produto recém-cadastrado
 
-                    connection.query(insertEmpresaProdutoQuery, insertEmpresaProdutoParams, (err, result) => {
-                        if (err) {
-                            console.error('Erro ao associar produto à empresa:', err);
-                            res.status(500).send('Erro ao associar produto à empresa. Tente novamente mais tarde.');
-                        } else {
-                            req.session.successMessage = 'Produto cadastrado com sucesso!';
-                            res.redirect('/cadastro_produtos');
-                        }
-                    });
-                }
-            });
+                // Inserir um novo registro na tabela 'empresa_produtos' associando o produto à empresa correspondente
+                const insertEmpresaProdutoQuery = 'INSERT INTO empresa_produtos (empresa_id, produto_id) VALUES (?, ?)';
+                const insertEmpresaProdutoParams = [empresa_id, productId]; // Usando o ID da empresa e do produto
 
-        } catch (error) {
-            console.error('Erro ao cadastrar o produto:', error.message);
-            res.status(500).send('Erro ao cadastrar o produto. Tente novamente mais tarde.');
-        }
-    } else {
-        res.redirect("/"); // Redirecionar se o usuário não estiver logado
+                connection.query(insertEmpresaProdutoQuery, insertEmpresaProdutoParams, (err, result) => {
+                    if (err) {
+                        console.error('Erro ao associar produto à empresa:', err);
+                        res.status(500).send('Erro ao associar produto à empresa. Tente novamente mais tarde.');
+                    } else {
+                        // Processamento após a associação bem-sucedida
+                        // ...
+                        res.json({ success: true }); // Responder com um JSON indicando o sucesso do cadastro
+                    }
+                });
+            }
+        });
+    } catch (error) {
+        console.error('Erro ao realizar a requisição:', error.message);
+        res.status(500).send('Erro ao realizar a requisição. Tente novamente mais tarde.');
     }
 });
 
@@ -152,6 +161,7 @@ app.post('/cadastrar_produto', async function (req, res) {
 
 
 // tudo de perfil empresa
+
 
 
 // Rota para o perfil da empresa
@@ -336,8 +346,6 @@ app.post('/home', function (req, res) {
 
 //rotas das páginas home || categorias || produtos
 
-
-// Rota para renderizar a página home após o login
 app.get('/views/home', function (req, res) {
     if (req.session.user) {
         console.log('Cidade do usuário:', req.session.cidade);
@@ -359,13 +367,27 @@ app.get('/views/home', function (req, res) {
                 return;
             }
 
-            console.log('Produtos recuperados com sucesso:', results);
-            res.render('views/home', { produtos: results }); // Passando os resultados para a página home.ejs
+            // Convertendo os Buffers em Base64 (sem cabeçalho) antes de armazenar em 'produtos'
+            const produtos = results.map(produto => {
+                const product = { ...produto };
+                if (Buffer.isBuffer(product.foto)) {
+                    product.foto = product.foto.toString('base64');
+                }
+                return product;
+            });
+
+            console.log('Dados enviados para o template:', produtos);
+
+            res.render('views/home', { produtos }); // Enviando 'produtos' para o template
         });
     } else {
         res.redirect('/');
     }
 });
+
+
+
+
 
 
 
@@ -414,6 +436,7 @@ app.post('/register', function (req, res) {
         }
     });
 });
+
 
 
 
